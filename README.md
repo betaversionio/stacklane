@@ -52,7 +52,7 @@ Options:
 ### Setup
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/betaversionio/stacklane.git
 cd StackLane
 pnpm install
 ```

@@ -1,13 +1,13 @@
-import { Sun, Moon, Monitor, Check } from "lucide-react";
-import { useTheme } from "@/components/theme-provider";
-import { useDesktopSettings } from "../../context/desktop-settings-context";
-import { WALLPAPERS, type WallpaperOption } from "../../lib/wallpapers";
-import { cn } from "@/lib/utils";
+import { Sun, Moon, Monitor, Check } from 'lucide-react';
+import { useTheme } from '@/components/theme-provider';
+import { useDesktopSettings } from '../../context/desktop-settings-context';
+import { WALLPAPERS, type WallpaperOption } from '../../lib/wallpapers';
+import { cn } from '@/lib/utils';
 
 const themes = [
-  { key: "light" as const, label: "Light", icon: Sun },
-  { key: "dark" as const, label: "Dark", icon: Moon },
-  { key: "system" as const, label: "System", icon: Monitor },
+  { key: 'light' as const, label: 'Light', icon: Sun },
+  { key: 'dark' as const, label: 'Dark', icon: Moon },
+  { key: 'system' as const, label: 'System', icon: Monitor },
 ];
 
 function WallpaperThumbnail({
@@ -22,20 +22,18 @@ function WallpaperThumbnail({
   return (
     <button
       onClick={onClick}
-      className={cn(
-        "relative flex flex-col items-center gap-1.5 group",
-      )}
+      className={cn('relative flex flex-col items-center gap-1.5 group')}
     >
       <div
         className={cn(
-          "relative w-[120px] h-[80px] rounded-lg overflow-hidden border-2 transition-all",
+          'relative w-[120px] h-[80px] rounded-lg overflow-hidden border-2 transition-all',
           active
-            ? "border-primary ring-2 ring-primary/30"
-            : "border-border hover:border-muted-foreground/50"
+            ? 'border-primary ring-2 ring-primary/30'
+            : 'border-border hover:border-muted-foreground/50',
         )}
       >
-        {wp.type === "gradient" ? (
-          <div className={cn("absolute inset-0", wp.value)} />
+        {wp.type === 'gradient' ? (
+          <div className={cn('absolute inset-0', wp.value)} />
         ) : (
           <div
             className="absolute inset-0 bg-cover bg-center"
@@ -71,10 +69,10 @@ export function SettingsApp() {
                 key={t.key}
                 onClick={() => setTheme(t.key)}
                 className={cn(
-                  "flex flex-col items-center gap-2 rounded-xl border-2 p-4 w-28 transition-all",
+                  'flex flex-col items-center gap-2 rounded-xl border-2 p-4 w-28 transition-all',
                   theme === t.key
-                    ? "border-primary bg-primary/5"
-                    : "border-border hover:border-muted-foreground/50 hover:bg-muted/50"
+                    ? 'border-primary bg-primary/5'
+                    : 'border-border hover:border-muted-foreground/50 hover:bg-muted/50',
                 )}
               >
                 <div className="relative">
@@ -93,23 +91,12 @@ export function SettingsApp() {
         <section>
           <h2 className="text-sm font-semibold mb-1">Desktop Background</h2>
 
-          {/* Gradients */}
-          <h3 className="text-xs text-muted-foreground mt-3 mb-2">Gradients</h3>
-          <div className="flex flex-wrap gap-3">
-            {WALLPAPERS.filter((w) => w.type === "gradient").map((wp) => (
-              <WallpaperThumbnail
-                key={wp.id}
-                wp={wp}
-                active={wallpaper === wp.id}
-                onClick={() => setWallpaper(wp.id)}
-              />
-            ))}
-          </div>
-
           {/* Abstract patterns */}
           <h3 className="text-xs text-muted-foreground mt-4 mb-2">Patterns</h3>
           <div className="flex flex-wrap gap-3">
-            {WALLPAPERS.filter((w) => w.type === "image" && w.id.startsWith("image-")).map((wp) => (
+            {WALLPAPERS.filter(
+              (w) => w.type === 'image' && w.id.startsWith('image-'),
+            ).map((wp) => (
               <WallpaperThumbnail
                 key={wp.id}
                 wp={wp}
@@ -122,7 +109,9 @@ export function SettingsApp() {
           {/* Photos */}
           <h3 className="text-xs text-muted-foreground mt-4 mb-2">Photos</h3>
           <div className="flex flex-wrap gap-3">
-            {WALLPAPERS.filter((w) => w.type === "image" && w.id.startsWith("photo-")).map((wp) => (
+            {WALLPAPERS.filter(
+              (w) => w.type === 'image' && w.id.startsWith('photo-'),
+            ).map((wp) => (
               <WallpaperThumbnail
                 key={wp.id}
                 wp={wp}

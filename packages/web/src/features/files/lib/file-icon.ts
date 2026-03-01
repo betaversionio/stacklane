@@ -4,7 +4,7 @@ import {
   getIconUrlByName,
 } from "vscode-material-icons";
 
-const ICONS_URL = "/material-icons";
+const ICONS_URL = "https://cdn.jsdelivr.net/npm/vscode-material-icons@0.1.1/generated/icons";
 
 export function getFileIconUrl(fileName: string): string {
   const icon = getIconForFilePath(fileName);
