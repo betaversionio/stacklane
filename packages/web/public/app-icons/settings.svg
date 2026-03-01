@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <defs>
+    <linearGradient id="sbg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#78909C"/>
+      <stop offset="100%" stop-color="#455A64"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="112" height="112" rx="26" fill="url(#sbg)"/>
+  <rect x="4" y="4" width="112" height="112" rx="26" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+  <!-- Outer gear -->
+  <g transform="translate(60,60)">
+    <!-- Gear teeth -->
+    <path d="M-6,-38 L6,-38 L8,-28 L-8,-28 Z" fill="#CFD8DC"/>
+    <path d="M-6,-38 L6,-38 L8,-28 L-8,-28 Z" fill="#CFD8DC" transform="rotate(45)"/>
+    <path d="M-6,-38 L6,-38 L8,-28 L-8,-28 Z" fill="#CFD8DC" transform="rotate(90)"/>
+    <path d="M-6,-38 L6,-38 L8,-28 L-8,-28 Z" fill="#CFD8DC" transform="rotate(135)"/>
+    <path d="M-6,-38 L6,-38 L8,-28 L-8,-28 Z" fill="#CFD8DC" transform="rotate(180)"/>
+    <path d="M-6,-38 L6,-38 L8,-28 L-8,-28 Z" fill="#CFD8DC" transform="rotate(225)"/>
+    <path d="M-6,-38 L6,-38 L8,-28 L-8,-28 Z" fill="#CFD8DC" transform="rotate(270)"/>
+    <path d="M-6,-38 L6,-38 L8,-28 L-8,-28 Z" fill="#CFD8DC" transform="rotate(315)"/>
+    <!-- Gear body -->
+    <circle r="28" fill="#CFD8DC"/>
+    <circle r="18" fill="#78909C"/>
+    <circle r="10" fill="#B0BEC5"/>
+    <circle r="5" fill="#546E7A"/>
+  </g>
+</svg>

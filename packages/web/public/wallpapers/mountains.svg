@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0c0a1d"/>
+      <stop offset="60%" stop-color="#1a1040"/>
+      <stop offset="100%" stop-color="#2d1b69"/>
+    </linearGradient>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#sky)"/>
+  <!-- Stars -->
+  <g fill="#fff" opacity="0.6">
+    <circle cx="200" cy="80" r="1.5"/><circle cx="500" cy="120" r="1"/><circle cx="800" cy="60" r="1.2"/>
+    <circle cx="1100" cy="90" r="1.5"/><circle cx="1400" cy="50" r="1"/><circle cx="1700" cy="110" r="1.3"/>
+    <circle cx="350" cy="200" r="1"/><circle cx="650" cy="180" r="1.5"/><circle cx="1000" cy="160" r="1"/>
+    <circle cx="1300" cy="210" r="1.2"/><circle cx="1600" cy="170" r="1"/><circle cx="150" cy="300" r="1.3"/>
+    <circle cx="1850" cy="250" r="1"/><circle cx="960" cy="280" r="1.5"/>
+  </g>
+  <!-- Far mountains -->
+  <polygon points="0,700 300,400 600,650 900,350 1200,600 1500,380 1920,650 1920,1080 0,1080" fill="#1e1145" opacity="0.8"/>
+  <!-- Mid mountains -->
+  <polygon points="0,750 250,500 500,700 750,450 1050,680 1300,480 1600,700 1920,550 1920,1080 0,1080" fill="#2a1a5e" opacity="0.9"/>
+  <!-- Near mountains -->
+  <polygon points="0,850 200,620 450,800 700,580 1000,780 1250,600 1500,800 1750,650 1920,780 1920,1080 0,1080" fill="#362272"/>
+  <!-- Foreground -->
+  <polygon points="0,900 400,780 800,880 1200,800 1600,870 1920,820 1920,1080 0,1080" fill="#1a0e3a"/>
+</svg>

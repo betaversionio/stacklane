@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <defs>
+    <linearGradient id="abg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2D2D2D"/>
+      <stop offset="100%" stop-color="#1A1A1A"/>
+    </linearGradient>
+    <linearGradient id="pulse" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#00E676"/>
+      <stop offset="100%" stop-color="#00C853"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="112" height="112" rx="26" fill="url(#abg)"/>
+  <rect x="4" y="4" width="112" height="112" rx="26" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="1"/>
+  <!-- Grid lines -->
+  <line x1="20" y1="40" x2="100" y2="40" stroke="#333" stroke-width="0.5"/>
+  <line x1="20" y1="55" x2="100" y2="55" stroke="#333" stroke-width="0.5"/>
+  <line x1="20" y1="70" x2="100" y2="70" stroke="#333" stroke-width="0.5"/>
+  <line x1="20" y1="85" x2="100" y2="85" stroke="#333" stroke-width="0.5"/>
+  <line x1="40" y1="30" x2="40" y2="95" stroke="#333" stroke-width="0.5"/>
+  <line x1="60" y1="30" x2="60" y2="95" stroke="#333" stroke-width="0.5"/>
+  <line x1="80" y1="30" x2="80" y2="95" stroke="#333" stroke-width="0.5"/>
+  <!-- Pulse line -->
+  <polyline points="18,68 30,68 36,68 42,50 48,78 54,38 60,72 66,55 72,62 78,45 84,60 90,52 96,58 102,58"
+    fill="none" stroke="url(#pulse)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Glow effect on pulse -->
+  <polyline points="18,68 30,68 36,68 42,50 48,78 54,38 60,72 66,55 72,62 78,45 84,60 90,52 96,58 102,58"
+    fill="none" stroke="#00E676" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" opacity="0.15"/>
+  <!-- CPU label -->
+  <text x="60" y="26" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#00E676" text-anchor="middle" font-weight="600">CPU</text>
+  <!-- Bottom bar chart -->
+  <rect x="24" y="88" width="8" height="6" rx="1" fill="#00E676" opacity="0.6"/>
+  <rect x="36" y="84" width="8" height="10" rx="1" fill="#00E676" opacity="0.7"/>
+  <rect x="48" y="86" width="8" height="8" rx="1" fill="#00E676" opacity="0.5"/>
+  <rect x="60" y="82" width="8" height="12" rx="1" fill="#00E676" opacity="0.8"/>
+  <rect x="72" y="85" width="8" height="9" rx="1" fill="#00E676" opacity="0.6"/>
+  <rect x="84" y="87" width="8" height="7" rx="1" fill="#00E676" opacity="0.5"/>
+</svg>

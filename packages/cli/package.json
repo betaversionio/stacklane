@@ -1,0 +1,73 @@
+{
+  "name": "stacklane",
+  "version": "0.1.0",
+  "description": "Browser-based OS-like UI for managing remote servers via SSH",
+  "author": {
+    "name": "Satyam Lohiya",
+    "url": "https://github.com/satyamlohiya"
+  },
+  "homepage": "https://github.com/satyamlohiya/stacklane#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/satyamlohiya/stacklane.git",
+    "directory": "packages/cli"
+  },
+  "bugs": {
+    "url": "https://github.com/satyamlohiya/stacklane/issues"
+  },
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "stacklane": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "os": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "bundle": "node scripts/bundle.mjs",
+    "dev": "tsc --watch --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/core": "^11.0.0",
+    "@nestjs/platform-express": "^11.0.0",
+    "@nestjs/platform-ws": "^11.0.0",
+    "@nestjs/websockets": "^11.0.0",
+    "commander": "^13.0.0",
+    "drizzle-orm": "^0.45.1",
+    "express": "^4.21.0",
+    "open": "^10.1.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1",
+    "sql.js": "^1.14.0",
+    "ssh2": "^1.16.0",
+    "uuid": "^11.0.0"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  },
+  "keywords": [
+    "ssh",
+    "server",
+    "terminal",
+    "sftp",
+    "devops",
+    "server-management",
+    "remote-server",
+    "web-terminal",
+    "file-manager",
+    "ssh-client"
+  ]
+}

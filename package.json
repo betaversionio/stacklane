@@ -1,0 +1,23 @@
+{
+  "name": "stacklane-monorepo",
+  "private": true,
+  "scripts": {
+    "dev": "turbo dev",
+    "dev:web": "pnpm --filter @stacklane/web dev",
+    "dev:server": "pnpm --filter @stacklane/server dev",
+    "build": "turbo build",
+    "build:pkg": "turbo build && pnpm --filter stacklane bundle",
+    "link:cli": "cd packages/cli && pnpm link --global",
+    "unlink:cli": "pnpm uninstall --global stacklane",
+    "pack:cli": "cd packages/cli && pnpm pack",
+    "publish:dry": "cd packages/cli && pnpm publish --dry-run --no-git-checks",
+    "publish:npm": "cd packages/cli && pnpm publish --no-git-checks",
+    "lint": "turbo lint",
+    "clean": "turbo clean"
+  },
+  "devDependencies": {
+    "turbo": "^2.4.0",
+    "typescript": "^5.7.0"
+  },
+  "packageManager": "pnpm@9.15.0"
+}

@@ -1,0 +1,72 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "🚀 dev",
+      "detail": "Run server + web in dev mode",
+      "type": "shell",
+      "command": "pnpm dev",
+      "group": "build",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "🖥️ dev:server",
+      "detail": "Run NestJS server with hot reload",
+      "type": "shell",
+      "command": "pnpm dev:server",
+      "group": "build",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "🌐 dev:web",
+      "detail": "Run Vite dev server",
+      "type": "shell",
+      "command": "pnpm dev:web",
+      "group": "build",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "🔨 build",
+      "detail": "Build all packages",
+      "type": "shell",
+      "command": "pnpm build",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": ["$tsc"]
+    },
+    {
+      "label": "📦 build:pkg",
+      "detail": "Build + bundle into publishable CLI package",
+      "type": "shell",
+      "command": "pnpm build:pkg",
+      "group": "build",
+      "problemMatcher": ["$tsc"]
+    },
+    {
+      "label": "🧹 clean",
+      "detail": "Clean all dist folders",
+      "type": "shell",
+      "command": "pnpm clean",
+      "problemMatcher": []
+    },
+    {
+      "label": "🔗 link:cli",
+      "detail": "Link CLI globally for testing",
+      "type": "shell",
+      "command": "pnpm link:cli",
+      "problemMatcher": []
+    },
+    {
+      "label": "✂️ unlink:cli",
+      "detail": "Unlink CLI from global",
+      "type": "shell",
+      "command": "pnpm unlink:cli",
+      "problemMatcher": []
+    }
+  ]
+}
