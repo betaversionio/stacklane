@@ -5,7 +5,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useConnectionDialog } from "@/features/connections";
+import { useConnectionDialog } from "@/features/servers";
 import { useSidebar } from "./sidebar-context";
 
 export function SidebarFooter() {

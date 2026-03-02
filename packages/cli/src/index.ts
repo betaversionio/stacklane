@@ -13,7 +13,7 @@ const program = new Command();
 program
   .name("stacklane")
   .description("Browser-based OS-like UI for managing remote servers via SSH")
-  .version("0.1.0")
+  .version("0.1.1")
   .option("-p, --port <number>", "Port to run on", "3721")
   .option("--no-open", "Don't open browser automatically")
   .action(async (opts) => {

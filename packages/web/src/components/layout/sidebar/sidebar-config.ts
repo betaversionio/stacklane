@@ -30,7 +30,7 @@ export const navGroups: NavGroup[] = [
     items: [
       { icon: MonitorIcon, label: "Servers", href: "/servers" },
       { icon: Key, label: "Keychain", href: "/keychain" },
-      { icon: CloudConnection, label: "Buckets", href: "/buckets" },
+      { icon: CloudConnection, label: "Storage", href: "/storage" },
       { icon: Setting2, label: "Settings", href: "/settings" },
     ],
   },

@@ -1,0 +1,12 @@
+export { MarketplaceProvider, useMarketplace } from "./components/marketplace-context";
+export { MarketplaceAppHost } from "./components/marketplace-app-host";
+export { MarketplaceAppErrorBoundary } from "./components/marketplace-app-error-boundary";
+export { useMarketplaceCatalog } from "./hooks/use-marketplace-catalog";
+export { marketplaceApi } from "./api";
+export { buildAssociationMap, resolveFileHandler, getFileHandlers } from "./lib/file-associations";
+export { loadMarketplaceApp, unloadMarketplaceApp, isAppLoaded } from "./lib/app-loader";
+export { buildSDK } from "./lib/sdk";
+export type { StackLaneSDK, MarketplaceAppProps } from "./lib/sdk";
+export type { FileAssociationMap } from "./lib/file-associations";
+export type { InstalledApp, MarketplaceAppManifest } from "./types";
+export { toMarketAppType, fromMarketAppType } from "./types";

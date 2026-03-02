@@ -1,4 +1,3 @@
-export { KeychainPage } from "./components/keychain-page";
 export { KeyCard } from "./components/key-card";
 export { KeyDialog } from "./components/key-dialog";
 export {

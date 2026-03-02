@@ -2,11 +2,11 @@ import { Injectable, Logger, type OnModuleInit } from "@nestjs/common";
 import fs from "fs";
 import path from "path";
 import os from "os";
-import type { ServerConnection, SSHKey, BucketCredential } from "@stacklane/shared";
+import type { ServerConnection, SSHKey, StorageCredential, ServerSystemInfo, Project } from "@stacklane/shared";
 import initSqlJs from "sql.js";
 import { drizzle, type SQLJsDatabase } from "drizzle-orm/sql-js";
 import { eq } from "drizzle-orm";
-import { connections, sshKeys, bucketCredentials } from "./schema.js";
+import { connections, projects, sshKeys, storageCredentials } from "./schema.js";
 
 const DATA_DIR = path.join(os.homedir(), ".stacklane");
 const DB_FILE = path.join(DATA_DIR, "data.db");
@@ -66,7 +66,7 @@ export class StoreService implements OnModuleInit {
     `);
 
     this.sqlite.run(`
-      CREATE TABLE IF NOT EXISTS bucketCredentials (
+      CREATE TABLE IF NOT EXISTS storageCredentials (
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
         type TEXT NOT NULL CHECK(type IN ('s3', 'gcs')),
@@ -82,9 +82,43 @@ export class StoreService implements OnModuleInit {
       )
     `);
 
+    this.sqlite.run(`
+      CREATE TABLE IF NOT EXISTS projects (
+        id TEXT PRIMARY KEY,
+        name TEXT NOT NULL,
+        description TEXT,
+        serverIds TEXT,
+        storageCredentialIds TEXT,
+        color TEXT,
+        createdAt TEXT NOT NULL,
+        updatedAt TEXT NOT NULL
+      )
+    `);
+
+    // Migration: rename bucketCredentials → storageCredentials
+    try {
+      this.sqlite.run(`ALTER TABLE bucketCredentials RENAME TO storageCredentials`);
+    } catch {
+      // Table already renamed or doesn't exist
+    }
+
+    // Migration: rename bucketCredentialIds → storageCredentialIds in projects
+    try {
+      this.sqlite.run(`ALTER TABLE projects RENAME COLUMN bucketCredentialIds TO storageCredentialIds`);
+    } catch {
+      // Column already renamed or doesn't exist
+    }
+
     // Migration: add keychainKeyId to connections if missing
     try {
       this.sqlite.run(`ALTER TABLE connections ADD COLUMN keychainKeyId TEXT`);
+    } catch {
+      // Column already exists
+    }
+
+    // Migration: add systemInfo to connections if missing
+    try {
+      this.sqlite.run(`ALTER TABLE connections ADD COLUMN systemInfo TEXT`);
     } catch {
       // Column already exists
     }
@@ -109,6 +143,7 @@ export class StoreService implements OnModuleInit {
       keychainKeyId: row.keychainKeyId ?? undefined,
       color: row.color ?? undefined,
       tags: row.tags ?? undefined,
+      systemInfo: row.systemInfo ? JSON.parse(row.systemInfo) : undefined,
     };
   }
 
@@ -202,6 +237,17 @@ export class StoreService implements OnModuleInit {
     return true;
   }
 
+  // --- System Info ---
+
+  updateSystemInfo(id: string, info: ServerSystemInfo): void {
+    this.db
+      .update(connections)
+      .set({ systemInfo: JSON.stringify(info) })
+      .where(eq(connections.id, id))
+      .run();
+    this.persistToDisk();
+  }
+
   // --- SSH Keys (Keychain) ---
 
   getSSHKeys(): SSHKey[] {
@@ -268,11 +314,11 @@ export class StoreService implements OnModuleInit {
     return true;
   }
 
-  // --- Bucket Credentials ---
+  // --- Storage Credentials ---
 
-  private rowToBucketCredential(
-    row: typeof bucketCredentials.$inferSelect
-  ): BucketCredential {
+  private rowToStorageCredential(
+    row: typeof storageCredentials.$inferSelect
+  ): StorageCredential {
     if (row.type === "gcs") {
       return {
         id: row.id,
@@ -300,24 +346,24 @@ export class StoreService implements OnModuleInit {
     };
   }
 
-  getBucketCredentials(): BucketCredential[] {
-    const rows = this.db.select().from(bucketCredentials).all();
-    return rows.map((r: typeof bucketCredentials.$inferSelect) =>
-      this.rowToBucketCredential(r)
+  getStorageCredentials(): StorageCredential[] {
+    const rows = this.db.select().from(storageCredentials).all();
+    return rows.map((r: typeof storageCredentials.$inferSelect) =>
+      this.rowToStorageCredential(r)
     );
   }
 
-  getBucketCredential(id: string): BucketCredential | undefined {
+  getStorageCredential(id: string): StorageCredential | undefined {
     const row = this.db
       .select()
-      .from(bucketCredentials)
-      .where(eq(bucketCredentials.id, id))
+      .from(storageCredentials)
+      .where(eq(storageCredentials.id, id))
       .get();
-    return row ? this.rowToBucketCredential(row) : undefined;
+    return row ? this.rowToStorageCredential(row) : undefined;
   }
 
-  addBucketCredential(cred: BucketCredential): BucketCredential {
-    this.db.insert(bucketCredentials).values({
+  addStorageCredential(cred: StorageCredential): StorageCredential {
+    this.db.insert(storageCredentials).values({
       id: cred.id,
       name: cred.name,
       type: cred.type,
@@ -335,21 +381,21 @@ export class StoreService implements OnModuleInit {
     return cred;
   }
 
-  updateBucketCredential(
+  updateStorageCredential(
     id: string,
-    updates: Partial<BucketCredential>
-  ): BucketCredential | null {
-    const existing = this.getBucketCredential(id);
+    updates: Partial<StorageCredential>
+  ): StorageCredential | null {
+    const existing = this.getStorageCredential(id);
     if (!existing) return null;
 
     const merged = {
       ...existing,
       ...updates,
       updatedAt: new Date().toISOString(),
-    } as BucketCredential;
+    } as StorageCredential;
 
     this.db
-      .update(bucketCredentials)
+      .update(storageCredentials)
       .set({
         name: merged.name,
         type: merged.type,
@@ -362,17 +408,93 @@ export class StoreService implements OnModuleInit {
         defaultBucket: merged.defaultBucket ?? null,
         updatedAt: merged.updatedAt,
       })
-      .where(eq(bucketCredentials.id, id))
+      .where(eq(storageCredentials.id, id))
       .run();
 
     this.persistToDisk();
     return merged;
   }
 
-  deleteBucketCredential(id: string): boolean {
-    const existing = this.getBucketCredential(id);
+  deleteStorageCredential(id: string): boolean {
+    const existing = this.getStorageCredential(id);
     if (!existing) return false;
-    this.db.delete(bucketCredentials).where(eq(bucketCredentials.id, id)).run();
+    this.db.delete(storageCredentials).where(eq(storageCredentials.id, id)).run();
+    this.persistToDisk();
+    return true;
+  }
+
+  // --- Projects ---
+
+  private rowToProject(row: typeof projects.$inferSelect): Project {
+    return {
+      ...row,
+      description: row.description ?? undefined,
+      serverIds: row.serverIds ?? [],
+      storageCredentialIds: row.storageCredentialIds ?? [],
+      color: row.color ?? undefined,
+    };
+  }
+
+  getProjects(): Project[] {
+    const rows = this.db.select().from(projects).all();
+    return rows.map((r: typeof projects.$inferSelect) => this.rowToProject(r));
+  }
+
+  getProject(id: string): Project | undefined {
+    const row = this.db
+      .select()
+      .from(projects)
+      .where(eq(projects.id, id))
+      .get();
+    return row ? this.rowToProject(row) : undefined;
+  }
+
+  addProject(project: Project): Project {
+    this.db.insert(projects).values({
+      id: project.id,
+      name: project.name,
+      description: project.description ?? null,
+      serverIds: project.serverIds ?? null,
+      storageCredentialIds: project.storageCredentialIds ?? null,
+      color: project.color ?? null,
+      createdAt: project.createdAt,
+      updatedAt: project.updatedAt,
+    }).run();
+    this.persistToDisk();
+    return project;
+  }
+
+  updateProject(id: string, updates: Partial<Project>): Project | null {
+    const existing = this.getProject(id);
+    if (!existing) return null;
+
+    const merged = {
+      ...existing,
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    };
+
+    this.db
+      .update(projects)
+      .set({
+        name: merged.name,
+        description: merged.description ?? null,
+        serverIds: merged.serverIds ?? null,
+        storageCredentialIds: merged.storageCredentialIds ?? null,
+        color: merged.color ?? null,
+        updatedAt: merged.updatedAt,
+      })
+      .where(eq(projects.id, id))
+      .run();
+
+    this.persistToDisk();
+    return merged;
+  }
+
+  deleteProject(id: string): boolean {
+    const existing = this.getProject(id);
+    if (!existing) return false;
+    this.db.delete(projects).where(eq(projects.id, id)).run();
     this.persistToDisk();
     return true;
   }

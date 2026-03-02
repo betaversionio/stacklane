@@ -1,9 +1,9 @@
-@import "@fontsource/poppins/latin-400.css";
-@import "@fontsource/poppins/latin-500.css";
-@import "@fontsource/poppins/latin-600.css";
-@import "@fontsource/poppins/latin-700.css";
-@import "tailwindcss";
-@import "@xterm/xterm/css/xterm.css";
+@import '@fontsource/poppins/latin-400.css';
+@import '@fontsource/poppins/latin-500.css';
+@import '@fontsource/poppins/latin-600.css';
+@import '@fontsource/poppins/latin-700.css';
+@import 'tailwindcss';
+@import '@xterm/xterm/css/xterm.css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -57,7 +57,7 @@
     --accent-foreground: 0 0% 98%;
     --destructive: 0 84% 60%;
     --destructive-foreground: var(--color-red-600);
-    --border: 0 0% 14%;
+    --border: 0 0% 10%;
     --input: 0 0% 14.9%;
     --ring: 222 100% 65%;
     --sidebar: 0 0% 0%;
@@ -105,6 +105,38 @@
       #a1a1aa 100%
     );
   }
+}
+
+/* Window animations — use scale via a separate property to avoid overriding translate3d */
+@keyframes window-open {
+  from {
+    opacity: 0;
+    scale: 0.92;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+@keyframes window-close {
+  from {
+    opacity: 1;
+    scale: 1;
+  }
+  to {
+    opacity: 0;
+    scale: 0.92;
+  }
+}
+
+.animate-window-open {
+  animation: window-open 0.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-window-close {
+  animation: window-close 0.15s cubic-bezier(0.22, 1, 0.36, 1) both;
+  pointer-events: none;
 }
 
 /* Custom Scrollbar */
@@ -203,7 +235,7 @@
 }
 
 @theme inline {
-  --font-sans: "Poppins", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Poppins', ui-sans-serif, system-ui, sans-serif;
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
   --color-card: hsl(var(--card));

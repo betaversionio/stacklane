@@ -1,28 +1,33 @@
-import { useEffect, useRef, type ChangeEvent } from "react";
-import { useForm, Controller } from "react-hook-form";
-import { useQuery } from "@tanstack/react-query";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import type { SSHKey, SSHKeyInput } from "@stacklane/shared";
-import { useCreateKey, useUpdateKey } from "../hooks/use-keychain";
-import { keychainApi } from "../api";
-import { CustomDialog } from "@/components/ui/custom-dialog";
-import { Button } from "@/components/ui/button";
-import { Field, FieldLabel, FieldError, FieldGroup } from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
+import { useEffect, useRef, type ChangeEvent } from 'react';
+import { useForm, Controller } from 'react-hook-form';
+import { useQuery } from '@tanstack/react-query';
+import { z } from 'zod';
+import { zodResolver } from '@hookform/resolvers/zod';
+import type { SSHKey, SSHKeyInput } from '@stacklane/shared';
+import { useCreateKey, useUpdateKey } from '@/features/keychain';
+import { keychainApi } from '../api';
+import { CustomDialog } from '@/components/ui/custom-dialog';
+import { Button } from '@/components/ui/button';
+import {
+  Field,
+  FieldLabel,
+  FieldError,
+  FieldGroup,
+} from '@/components/ui/field';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 
 const keySchema = z
   .object({
-    name: z.string().min(1, "Name is required"),
-    type: z.enum(["file", "text"]),
+    name: z.string().min(1, 'Name is required'),
+    type: z.enum(['file', 'text']),
     keyContent: z.string(),
     passphrase: z.string(),
   })
@@ -31,10 +36,10 @@ const keySchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message:
-          data.type === "file"
-            ? "Key file is required"
-            : "Key content is required",
-        path: ["keyContent"],
+          data.type === 'file'
+            ? 'Key file is required'
+            : 'Key content is required',
+        path: ['keyContent'],
       });
     }
   });
@@ -42,10 +47,10 @@ const keySchema = z
 type KeyFormValues = z.infer<typeof keySchema>;
 
 const defaults: KeyFormValues = {
-  name: "",
-  type: "file",
-  keyContent: "",
-  passphrase: "",
+  name: '',
+  type: 'file',
+  keyContent: '',
+  passphrase: '',
 };
 
 interface KeyDialogProps {
@@ -58,11 +63,13 @@ export function KeyDialog({ open, onClose, editKey }: KeyDialogProps) {
   const isEdit = !!editKey;
   const createMutation = useCreateKey();
   const updateMutation = useUpdateKey();
-  const isPending = isEdit ? updateMutation.isPending : createMutation.isPending;
+  const isPending = isEdit
+    ? updateMutation.isPending
+    : createMutation.isPending;
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data: fullKeyData } = useQuery({
-    queryKey: ["keychain", editKey?.id],
+    queryKey: ['keychain', editKey?.id],
     queryFn: () => keychainApi.get(editKey!.id),
     enabled: open && !!editKey,
   });
@@ -83,7 +90,7 @@ export function KeyDialog({ open, onClose, editKey }: KeyDialogProps) {
   useEffect(() => {
     if (open && !editKey) {
       reset(defaults);
-      if (fileInputRef.current) fileInputRef.current.value = "";
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   }, [open, editKey, reset]);
 
@@ -92,22 +99,22 @@ export function KeyDialog({ open, onClose, editKey }: KeyDialogProps) {
       const key = fullKeyData.data as SSHKey;
       reset({
         name: key.name,
-        type: "text",
-        keyContent: key.keyContent ?? "",
-        passphrase: key.passphrase ?? "",
+        type: 'text',
+        keyContent: key.keyContent ?? '',
+        passphrase: key.passphrase ?? '',
       });
-      if (fileInputRef.current) fileInputRef.current.value = "";
+      if (fileInputRef.current) fileInputRef.current.value = '';
     }
   }, [open, editKey, fullKeyData, reset]);
 
-  const keyType = watch("type");
+  const keyType = watch('type');
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onload = () => {
-      setValue("keyContent", reader.result as string, {
+      setValue('keyContent', reader.result as string, {
         shouldValidate: true,
       });
     };
@@ -117,7 +124,7 @@ export function KeyDialog({ open, onClose, editKey }: KeyDialogProps) {
   const onSubmit = handleSubmit((data) => {
     const payload: SSHKeyInput = {
       name: data.name,
-      type: "text",
+      type: 'text',
       keyContent: data.keyContent,
       passphrase: data.passphrase || undefined,
     };
@@ -125,7 +132,7 @@ export function KeyDialog({ open, onClose, editKey }: KeyDialogProps) {
     if (isEdit) {
       updateMutation.mutate(
         { id: editKey.id, data: payload },
-        { onSuccess: () => onClose() }
+        { onSuccess: () => onClose() },
       );
     } else {
       createMutation.mutate(payload, { onSuccess: () => onClose() });
@@ -136,7 +143,7 @@ export function KeyDialog({ open, onClose, editKey }: KeyDialogProps) {
     <CustomDialog
       open={open}
       onOpenChange={(v) => !v && onClose()}
-      title={isEdit ? "Edit SSH Key" : "Add SSH Key"}
+      title={isEdit ? 'Edit SSH Key' : 'Add SSH Key'}
       footer={
         <form
           onSubmit={onSubmit}
@@ -146,7 +153,7 @@ export function KeyDialog({ open, onClose, editKey }: KeyDialogProps) {
             Cancel
           </Button>
           <Button type="submit" isLoading={isPending}>
-            {isEdit ? "Update" : "Add Key"}
+            {isEdit ? 'Update' : 'Add Key'}
           </Button>
         </form>
       }
@@ -157,7 +164,7 @@ export function KeyDialog({ open, onClose, editKey }: KeyDialogProps) {
           <Input
             id="key-name"
             placeholder="Production Key"
-            {...register("name")}
+            {...register('name')}
           />
           <FieldError errors={[errors.name]} />
         </Field>
@@ -181,7 +188,7 @@ export function KeyDialog({ open, onClose, editKey }: KeyDialogProps) {
           />
         </Field>
 
-        {keyType === "file" ? (
+        {keyType === 'file' ? (
           <Field data-invalid={!!errors.keyContent}>
             <FieldLabel htmlFor="key-file">Key File</FieldLabel>
             <Input
@@ -201,7 +208,7 @@ export function KeyDialog({ open, onClose, editKey }: KeyDialogProps) {
               id="key-content"
               placeholder="Paste your private key here..."
               className="min-h-[120px] font-mono text-sm"
-              {...register("keyContent")}
+              {...register('keyContent')}
             />
             <FieldError errors={[errors.keyContent]} />
           </Field>
@@ -215,7 +222,7 @@ export function KeyDialog({ open, onClose, editKey }: KeyDialogProps) {
             id="key-passphrase"
             type="password"
             placeholder="Enter passphrase"
-            {...register("passphrase")}
+            {...register('passphrase')}
           />
         </Field>
       </FieldGroup>

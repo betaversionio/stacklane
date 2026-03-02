@@ -1,47 +1,65 @@
-import { Navigate, type RouteObject } from "react-router-dom";
-import { ServerPage, useServerContext } from "@/pages/server/server-page";
-import { TerminalTab } from "@/features/terminal";
-import { FilesTab } from "@/features/files";
-import { MonitorTab } from "@/features/monitor";
-import { OsTab } from "@/features/os";
-import { ServerSettingsTab } from "@/pages/server/server-settings-tab";
+import { Navigate, type RouteObject } from 'react-router-dom';
+import {
+  ServerPage,
+  useServerContext,
+} from '@/pages/server/server-overview-page';
+import { ServersPage } from '@/pages/servers';
+import { OverviewPage } from '@/features/servers/overview';
+import { TerminalPage } from '@/features/servers/terminal';
+import { FilesPage } from '@/features/servers/files';
+import { MonitorPage } from '@/features/servers/monitor';
+import { OsPage } from '@/features/servers/os';
+import { ServerSettingsPage } from '@/pages/server/server-settings-page';
+
+function OverviewRoute() {
+  const { connectionId, connection } = useServerContext();
+  return <OverviewPage connectionId={connectionId} connection={connection} />;
+}
 
 function TerminalRoute() {
   const { connectionId } = useServerContext();
-  return <TerminalTab connectionId={connectionId} />;
+  return <TerminalPage connectionId={connectionId} />;
 }
 
 function FilesRoute() {
   const { connectionId } = useServerContext();
-  return <FilesTab connectionId={connectionId} />;
+  return <FilesPage connectionId={connectionId} />;
 }
 
 function MonitorRoute() {
   const { connectionId } = useServerContext();
-  return <MonitorTab connectionId={connectionId} />;
+  return <MonitorPage connectionId={connectionId} />;
 }
 
 function OsRoute() {
   const { connectionId } = useServerContext();
-  return <OsTab connectionId={connectionId} />;
+  return <OsPage connectionId={connectionId} />;
 }
 
 function SettingsRoute() {
   const { connection } = useServerContext();
-  return <ServerSettingsTab connection={connection} />;
+  return <ServerSettingsPage connection={connection} />;
 }
+
+export const serversListRoute: RouteObject[] = [
+  {
+    path: 'servers',
+    element: <ServersPage />,
+  },
+];
 
 export const serverRoutes: RouteObject[] = [
   {
-    path: "server/:id",
+    path: 'server/:id',
     element: <ServerPage />,
     children: [
-      { index: true, element: <Navigate to="terminal" replace /> },
-      { path: "terminal", element: <TerminalRoute /> },
-      { path: "files", element: <FilesRoute /> },
-      { path: "monitor", element: <MonitorRoute /> },
-      { path: "os", element: <OsRoute /> },
-      { path: "settings", element: <SettingsRoute /> },
+      { index: true, element: <Navigate to="overview" replace /> },
+      { path: 'overview', element: <OverviewRoute /> },
+      { path: 'terminal', element: <TerminalRoute /> },
+      { path: 'files', element: <FilesRoute /> },
+      { path: 'monitor', element: <MonitorRoute /> },
+      { path: 'os', element: <OsRoute /> },
+      { path: 'settings', element: <SettingsRoute /> },
     ],
   },
 ];

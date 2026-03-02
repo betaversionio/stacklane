@@ -74,9 +74,46 @@ export class SftpService {
 
   async deleteFile(connectionId: string, filePath: string, isDir: boolean): Promise<void> {
     const sftp = await this.getSFTP(connectionId);
-    return new Promise((resolve, reject) => {
-      const remove = isDir ? sftp.rmdir.bind(sftp) : sftp.unlink.bind(sftp);
-      remove(filePath, (err) => {
+    if (isDir) {
+      await this.rmdirRecursive(sftp, filePath);
+    } else {
+      return new Promise((resolve, reject) => {
+        sftp.unlink(filePath, (err) => {
+          if (err) reject(err);
+          else resolve();
+        });
+      });
+    }
+  }
+
+  private async rmdirRecursive(sftp: SFTPWrapper, dirPath: string): Promise<void> {
+    const entries = await new Promise<{ filename: string; attrs: { mode?: number } }[]>(
+      (resolve, reject) => {
+        sftp.readdir(dirPath, (err, list) => {
+          if (err) reject(err);
+          else resolve(list);
+        });
+      }
+    );
+
+    for (const entry of entries) {
+      const fullPath = dirPath === "/" ? `/${entry.filename}` : `${dirPath}/${entry.filename}`;
+      const isSubDir = ((entry.attrs.mode ?? 0) & 0o40000) !== 0;
+
+      if (isSubDir) {
+        await this.rmdirRecursive(sftp, fullPath);
+      } else {
+        await new Promise<void>((resolve, reject) => {
+          sftp.unlink(fullPath, (err) => {
+            if (err) reject(err);
+            else resolve();
+          });
+        });
+      }
+    }
+
+    await new Promise<void>((resolve, reject) => {
+      sftp.rmdir(dirPath, (err) => {
         if (err) reject(err);
         else resolve();
       });

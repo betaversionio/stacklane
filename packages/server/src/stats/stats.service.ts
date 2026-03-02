@@ -1,6 +1,6 @@
 import { Injectable, Inject } from "@nestjs/common";
 import { Client } from "ssh2";
-import type { ServerStats } from "@stacklane/shared";
+import type { ServerStats, ServerSystemInfo } from "@stacklane/shared";
 import { StoreService } from "../store/store.service.js";
 import { SshService } from "../ssh/ssh.service.js";
 
@@ -10,6 +10,47 @@ export class StatsService {
     @Inject(StoreService) private readonly store: StoreService,
     @Inject(SshService) private readonly ssh: SshService
   ) {}
+
+  async getSystemInfo(connectionId: string, refresh = false): Promise<ServerSystemInfo> {
+    const config = this.store.getConnection(connectionId);
+    if (!config) {
+      throw new Error("Connection not found");
+    }
+
+    if (!refresh && config.systemInfo) {
+      return config.systemInfo;
+    }
+
+    const client = await this.ssh.createSSHConnection(config);
+    const [osRelease, kernel, arch, platform] = await Promise.all([
+      this.execCommand(client, "cat /etc/os-release 2>/dev/null || echo ''"),
+      this.execCommand(client, "uname -r"),
+      this.execCommand(client, "uname -m"),
+      this.execCommand(client, "uname -s"),
+    ]);
+
+    let distro = "Unknown";
+    let distroId = "unknown";
+    for (const line of osRelease.split("\n")) {
+      if (line.startsWith("PRETTY_NAME=")) {
+        distro = line.split("=")[1]?.replace(/"/g, "") || distro;
+      }
+      if (line.startsWith("ID=")) {
+        distroId = line.split("=")[1]?.replace(/"/g, "") || distroId;
+      }
+    }
+
+    const info: ServerSystemInfo = {
+      distro,
+      distroId,
+      kernel,
+      architecture: arch,
+      platform,
+    };
+
+    this.store.updateSystemInfo(connectionId, info);
+    return info;
+  }
 
   async getStats(connectionId: string): Promise<ServerStats> {
     const config = this.store.getConnection(connectionId);

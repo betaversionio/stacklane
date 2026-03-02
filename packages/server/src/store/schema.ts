@@ -13,11 +13,12 @@ export const connections = sqliteTable("connections", {
   keychainKeyId: text("keychainKeyId"),
   color: text("color"),
   tags: text("tags", { mode: "json" }).$type<string[]>(),
+  systemInfo: text("systemInfo"),
   createdAt: text("createdAt").notNull(),
   updatedAt: text("updatedAt").notNull(),
 });
 
-export const bucketCredentials = sqliteTable("bucketCredentials", {
+export const storageCredentials = sqliteTable("storageCredentials", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   type: text("type", { enum: ["s3", "gcs"] }).notNull(),
@@ -28,6 +29,17 @@ export const bucketCredentials = sqliteTable("bucketCredentials", {
   secretAccessKey: text("secretAccessKey"),
   serviceAccountJson: text("serviceAccountJson"),
   defaultBucket: text("defaultBucket"),
+  createdAt: text("createdAt").notNull(),
+  updatedAt: text("updatedAt").notNull(),
+});
+
+export const projects = sqliteTable("projects", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description"),
+  serverIds: text("serverIds", { mode: "json" }).$type<string[]>(),
+  storageCredentialIds: text("storageCredentialIds", { mode: "json" }).$type<string[]>(),
+  color: text("color"),
   createdAt: text("createdAt").notNull(),
   updatedAt: text("updatedAt").notNull(),
 });

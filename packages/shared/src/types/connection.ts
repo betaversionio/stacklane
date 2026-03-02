@@ -1,3 +1,5 @@
+import type { ServerSystemInfo } from "./system-info.js";
+
 export interface ServerConnection {
   id: string;
   name: string;
@@ -11,6 +13,7 @@ export interface ServerConnection {
   keychainKeyId?: string;
   color?: string;
   tags?: string[];
+  systemInfo?: ServerSystemInfo;
   createdAt: string;
   updatedAt: string;
 }

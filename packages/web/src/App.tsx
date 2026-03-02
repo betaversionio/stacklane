@@ -1,7 +1,7 @@
 import { Outlet } from "react-router-dom";
 import { Sidebar, SidebarProvider } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
-import { ConnectionDialogProvider } from "@/features/connections/connection-dialog-context";
+import { ConnectionDialogProvider } from "@/features/servers";
 
 export function App() {
   return (

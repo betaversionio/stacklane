@@ -1,6 +1,6 @@
-import { Controller, Get, Param, Res, Inject } from "@nestjs/common";
+import { Controller, Get, Param, Query, Res, Inject } from "@nestjs/common";
 import type { Response } from "express";
-import type { ApiResponse, ServerStats } from "@stacklane/shared";
+import type { ApiResponse, ServerStats, ServerSystemInfo } from "@stacklane/shared";
 import { StatsService } from "./stats.service.js";
 
 @Controller("stats")
@@ -17,6 +17,22 @@ export class StatsController {
       return { success: true, data };
     } catch (err: unknown) {
       const error = err instanceof Error ? err.message : "Failed to get stats";
+      res.status(500);
+      return { success: false, error };
+    }
+  }
+
+  @Get(":connectionId/system-info")
+  async getSystemInfo(
+    @Param("connectionId") connectionId: string,
+    @Query("refresh") refresh: string | undefined,
+    @Res({ passthrough: true }) res: Response
+  ): Promise<ApiResponse<ServerSystemInfo>> {
+    try {
+      const data = await this.stats.getSystemInfo(connectionId, refresh === "true");
+      return { success: true, data };
+    } catch (err: unknown) {
+      const error = err instanceof Error ? err.message : "Failed to get system info";
       res.status(500);
       return { success: false, error };
     }

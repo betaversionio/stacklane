@@ -1,19 +1,16 @@
-import { BookOpen, Maximize, Minimize } from "lucide-react";
-import { ThemeToggle } from "@/components/shared/theme-toggle";
-import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { useFullscreen } from "@/hooks/use-fullscreen";
+import { BookOpen } from 'lucide-react';
+import { ThemeToggle } from '@/components/shared/theme-toggle';
+import { Button } from '@/components/ui/button';
 
 export function HeaderActions() {
-  const { isFullscreen, toggle: toggleFullscreen } = useFullscreen();
-
   return (
     <div className="flex items-center gap-2">
-      <Button variant="ghost" size="sm" asChild>
+      <Button
+        variant="ghost"
+        size="sm"
+        asChild
+        className="text-muted-foreground"
+      >
         <a
           href="https://stacklane.betaversion.io/docs"
           target="_blank"
@@ -23,21 +20,6 @@ export function HeaderActions() {
           Docs
         </a>
       </Button>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleFullscreen}
-            aria-label={isFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
-          >
-            {isFullscreen ? <Minimize size={18} /> : <Maximize size={18} />}
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>
-          {isFullscreen ? "Exit fullscreen" : "Fullscreen"}
-        </TooltipContent>
-      </Tooltip>
       <ThemeToggle />
     </div>
   );

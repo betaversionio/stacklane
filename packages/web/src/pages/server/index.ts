@@ -1,2 +1,2 @@
-export { ServerPage, useServerContext } from "./server-page";
-export { ServerLayout } from "./server-layout";
+export { ServerPage, useServerContext } from './server-overview-page';
+export { ServerLayout } from './server-layout';

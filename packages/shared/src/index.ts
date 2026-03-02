@@ -4,4 +4,7 @@ export * from "./types/api.js";
 export * from "./types/ws.js";
 export * from "./types/fs.js";
 export * from "./types/stats.js";
-export * from "./types/bucket.js";
+export * from "./types/storage.js";
+export * from "./types/marketplace.js";
+export * from "./types/system-info.js";
+export * from "./types/project.js";

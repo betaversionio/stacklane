@@ -1,9 +1,7 @@
 import { Link, Outlet, useParams } from "react-router-dom";
-import { HambergerMenu } from "iconsax-react";
-import { SidebarProvider, useSidebar } from "@/components/layout/sidebar/sidebar-context";
-import { ConnectionDialogProvider } from "@/features/connections";
-import { HeaderActions } from "@/components/layout/header-actions";
-import { Button } from "@/components/ui/button";
+import { SidebarProvider } from "@/components/layout/sidebar/sidebar-context";
+import { ConnectionDialogProvider } from "@/features/servers";
+import { PageHeader } from "@/components/ui/page-header";
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -12,50 +10,37 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { useConnections } from "@/features/connections";
+import { useConnections } from "@/features/servers";
 import type { ServerConnection } from "@stacklane/shared";
-import { ServerSidebar } from "./server-sidebar";
+import { ServerSidebar } from "@/features/servers/components/server-sidebar";
 
 function ServerHeader() {
   const { id } = useParams<{ id: string }>();
-  const { setMobileOpen } = useSidebar();
 
   const { data } = useConnections();
   const connections = (data?.data as ServerConnection[] | undefined) ?? [];
   const connection = connections.find((c) => c.id === id);
 
   return (
-    <header className="flex items-center justify-between h-14 px-6 border-b border-border bg-background/80 backdrop-blur-md">
-      <div className="flex items-center gap-1.5">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="md:hidden"
-          onClick={() => setMobileOpen(true)}
-          aria-label="Open menu"
-        >
-          <HambergerMenu size={20} color="currentColor" />
-        </Button>
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink asChild>
-                <Link to="/">Servers</Link>
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            {connection && (
-              <>
-                <BreadcrumbSeparator />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>{connection.name}</BreadcrumbPage>
-                </BreadcrumbItem>
-              </>
-            )}
-          </BreadcrumbList>
-        </Breadcrumb>
-      </div>
-      <HeaderActions />
-    </header>
+    <PageHeader>
+      <Breadcrumb>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link to="/">Servers</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          {connection && (
+            <>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>{connection.name}</BreadcrumbPage>
+              </BreadcrumbItem>
+            </>
+          )}
+        </BreadcrumbList>
+      </Breadcrumb>
+    </PageHeader>
   );
 }
 

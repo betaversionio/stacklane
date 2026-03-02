@@ -1,0 +1,18 @@
+[
+  {
+    "id": "image-viewer",
+    "name": "Image Viewer",
+    "description": "View images from your remote server with zoom and fit controls.",
+    "author": "StackLane",
+    "version": "1.0.0",
+    "iconUrl": "/marketplace-icons/image-viewer.svg",
+    "bundleUrl": "/marketplace-apps/image-viewer.js",
+    "fileAssociations": [".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp", ".bmp", ".ico"],
+    "defaultSize": { "width": 800, "height": 600 },
+    "minWidth": 400,
+    "minHeight": 300,
+    "showOnDesktop": false,
+    "showInDock": false,
+    "category": "media"
+  }
+]

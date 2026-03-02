@@ -1,0 +1,55 @@
+{
+  "name": "create-stacklane-app",
+  "version": "0.1.0",
+  "description": "Scaffold a new StackLane marketplace app with Vite, React, and TypeScript",
+  "author": {
+    "name": "Satyam Lohiya",
+    "url": "https://github.com/betaversionio"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/betaversionio/stacklane#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/betaversionio/stacklane.git",
+    "directory": "packages/create-stacklane-app"
+  },
+  "bugs": {
+    "url": "https://github.com/betaversionio/stacklane/issues"
+  },
+  "type": "module",
+  "bin": {
+    "create-stacklane-app": "./dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "os": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "keywords": [
+    "stacklane",
+    "create",
+    "scaffold",
+    "marketplace",
+    "vite",
+    "react",
+    "typescript",
+    "ssh",
+    "server-management",
+    "cli"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.0"
+  }
+}
