@@ -10,7 +10,7 @@ export class KeychainService {
   ) {}
 
   list(): SSHKey[] {
-    return this.store.getSSHKeys().map((k) => ({
+    return this.store.keychain.findAll().map((k) => ({
       ...k,
       keyContent: undefined,
       passphrase: undefined,
@@ -18,11 +18,11 @@ export class KeychainService {
   }
 
   get(id: string): SSHKey | undefined {
-    return this.store.getSSHKey(id);
+    return this.store.keychain.findById(id);
   }
 
   getFull(id: string): SSHKey | undefined {
-    return this.store.getSSHKey(id);
+    return this.store.keychain.findById(id);
   }
 
   create(input: SSHKeyInput): SSHKey {
@@ -33,15 +33,15 @@ export class KeychainService {
       createdAt: now,
       updatedAt: now,
     };
-    this.store.addSSHKey(key);
+    this.store.keychain.insert(key);
     return key;
   }
 
   update(id: string, updates: Partial<SSHKey>): SSHKey | null {
-    return this.store.updateSSHKey(id, updates);
+    return this.store.keychain.update(id, updates);
   }
 
   delete(id: string): boolean {
-    return this.store.deleteSSHKey(id);
+    return this.store.keychain.delete(id);
   }
 }

@@ -3,6 +3,7 @@
 @import '@fontsource/poppins/latin-600.css';
 @import '@fontsource/poppins/latin-700.css';
 @import 'tailwindcss';
+@import 'tw-animate-css';
 @import '@xterm/xterm/css/xterm.css';
 
 @custom-variant dark (&:is(.dark *));
@@ -186,6 +187,11 @@
   display: none !important;
   width: 0 !important;
   height: 0 !important;
+}
+
+/* Terminal toolbar button - theme-aware hover */
+.terminal-toolbar-btn:hover {
+  background-color: var(--hover-bg) !important;
 }
 
 @layer utilities {

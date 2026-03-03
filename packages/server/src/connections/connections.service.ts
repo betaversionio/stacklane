@@ -12,7 +12,7 @@ export class ConnectionsService {
   ) {}
 
   list(): ServerConnection[] {
-    return this.store.getConnections().map((c) => ({
+    return this.store.servers.findAll().map((c) => ({
       ...c,
       password: undefined,
       privateKey: undefined,
@@ -21,7 +21,7 @@ export class ConnectionsService {
   }
 
   get(id: string): ServerConnection | undefined {
-    return this.store.getConnection(id);
+    return this.store.servers.findById(id);
   }
 
   create(input: ServerConnectionInput): ServerConnection {
@@ -32,29 +32,34 @@ export class ConnectionsService {
       createdAt: now,
       updatedAt: now,
     };
-    this.store.addConnection(connection);
+    this.store.servers.insert(connection);
     return connection;
   }
 
-  update(id: string, updates: Partial<ServerConnection>): ServerConnection | null {
-    return this.store.updateConnection(id, updates);
+  update(
+    id: string,
+    updates: Partial<ServerConnection>,
+  ): ServerConnection | null {
+    return this.store.servers.update(id, updates);
   }
 
   delete(id: string): boolean {
     this.ssh.disconnectSSH(id);
-    return this.store.deleteConnection(id);
+    return this.store.servers.delete(id);
   }
 
-  async test(id: string): Promise<{ connected: boolean } | { error: string }> {
-    const connection = this.store.getConnection(id);
-    if (!connection) return { error: "Connection not found" };
+  async test(
+    id: string,
+  ): Promise<{ connected: boolean } | { error: string }> {
+    const connection = this.store.servers.findById(id);
+    if (!connection) return { error: 'Connection not found' };
 
     try {
       const client = await this.ssh.createSSHConnection(connection);
       client.end();
       return { connected: true };
     } catch (err: unknown) {
-      const error = err instanceof Error ? err.message : "Connection failed";
+      const error = err instanceof Error ? err.message : 'Connection failed';
       return { error };
     }
   }

@@ -1,21 +1,31 @@
-import { Injectable, Logger, type OnModuleInit } from "@nestjs/common";
-import fs from "fs";
-import path from "path";
-import os from "os";
-import type { ServerConnection, SSHKey, StorageCredential, ServerSystemInfo, Project } from "@stacklane/shared";
-import initSqlJs from "sql.js";
-import { drizzle, type SQLJsDatabase } from "drizzle-orm/sql-js";
-import { eq } from "drizzle-orm";
-import { connections, projects, sshKeys, storageCredentials } from "./schema.js";
+import { Injectable, Logger, type OnModuleInit } from '@nestjs/common';
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
+import initSqlJs from 'sql.js';
+import { drizzle, type SQLJsDatabase } from 'drizzle-orm/sql-js';
+import * as schema from './schema.js';
+import { ServerRepository } from './repositories/server.repository';
+import { KeychainRepository } from './repositories/keychain.repository';
+import { StorageRepository } from './repositories/storage.repository';
+import { ProjectRepository } from './repositories/project.repository';
 
-const DATA_DIR = path.join(os.homedir(), ".stacklane");
-const DB_FILE = path.join(DATA_DIR, "data.db");
+const DATA_DIR = path.join(os.homedir(), '.stacklane');
+const DB_FILE = path.join(DATA_DIR, 'data.db');
 
 @Injectable()
 export class StoreService implements OnModuleInit {
   private readonly logger = new Logger(StoreService.name);
-  private db!: SQLJsDatabase;
-  private sqlite!: InstanceType<Awaited<ReturnType<typeof initSqlJs>>["Database"]>;
+  private db!: SQLJsDatabase<typeof schema>;
+  private sqlite!: InstanceType<
+    Awaited<ReturnType<typeof initSqlJs>>['Database']
+  >;
+
+  // Repository instances
+  public servers!: ServerRepository;
+  public keychain!: KeychainRepository;
+  public storage!: StorageRepository;
+  public projects!: ProjectRepository;
 
   async onModuleInit() {
     if (!fs.existsSync(DATA_DIR)) {
@@ -31,8 +41,12 @@ export class StoreService implements OnModuleInit {
       this.sqlite = new SQL.Database();
     }
 
-    this.db = drizzle(this.sqlite);
+    this.db = drizzle(this.sqlite, { schema });
 
+    // Enable foreign keys (required for CASCADE DELETE)
+    this.sqlite.run('PRAGMA foreign_keys = ON');
+
+    // Create tables
     this.sqlite.run(`
       CREATE TABLE IF NOT EXISTS connections (
         id TEXT PRIMARY KEY,
@@ -47,6 +61,7 @@ export class StoreService implements OnModuleInit {
         keychainKeyId TEXT,
         color TEXT,
         tags TEXT,
+        systemInfo TEXT,
         createdAt TEXT NOT NULL,
         updatedAt TEXT NOT NULL
       )
@@ -87,415 +102,55 @@ export class StoreService implements OnModuleInit {
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
         description TEXT,
-        serverIds TEXT,
-        storageCredentialIds TEXT,
         color TEXT,
         createdAt TEXT NOT NULL,
         updatedAt TEXT NOT NULL
       )
     `);
 
-    // Migration: rename bucketCredentials → storageCredentials
-    try {
-      this.sqlite.run(`ALTER TABLE bucketCredentials RENAME TO storageCredentials`);
-    } catch {
-      // Table already renamed or doesn't exist
-    }
+    this.sqlite.run(`
+      CREATE TABLE IF NOT EXISTS projectServers (
+        projectId TEXT NOT NULL,
+        serverId TEXT NOT NULL,
+        createdAt TEXT NOT NULL,
+        PRIMARY KEY (projectId, serverId),
+        FOREIGN KEY (projectId) REFERENCES projects(id) ON DELETE CASCADE,
+        FOREIGN KEY (serverId) REFERENCES connections(id) ON DELETE CASCADE
+      )
+    `);
 
-    // Migration: rename bucketCredentialIds → storageCredentialIds in projects
-    try {
-      this.sqlite.run(`ALTER TABLE projects RENAME COLUMN bucketCredentialIds TO storageCredentialIds`);
-    } catch {
-      // Column already renamed or doesn't exist
-    }
+    this.sqlite.run(`
+      CREATE TABLE IF NOT EXISTS projectStorageCredentials (
+        projectId TEXT NOT NULL,
+        credentialId TEXT NOT NULL,
+        createdAt TEXT NOT NULL,
+        PRIMARY KEY (projectId, credentialId),
+        FOREIGN KEY (projectId) REFERENCES projects(id) ON DELETE CASCADE,
+        FOREIGN KEY (credentialId) REFERENCES storageCredentials(id) ON DELETE CASCADE
+      )
+    `);
 
-    // Migration: add keychainKeyId to connections if missing
-    try {
-      this.sqlite.run(`ALTER TABLE connections ADD COLUMN keychainKeyId TEXT`);
-    } catch {
-      // Column already exists
-    }
-
-    // Migration: add systemInfo to connections if missing
-    try {
-      this.sqlite.run(`ALTER TABLE connections ADD COLUMN systemInfo TEXT`);
-    } catch {
-      // Column already exists
-    }
+    // Initialize repositories
+    this.servers = new ServerRepository(this.db, this.persistToDisk.bind(this));
+    this.keychain = new KeychainRepository(
+      this.db,
+      this.persistToDisk.bind(this),
+    );
+    this.storage = new StorageRepository(
+      this.db,
+      this.persistToDisk.bind(this),
+    );
+    this.projects = new ProjectRepository(
+      this.db,
+      this.persistToDisk.bind(this),
+    );
 
     this.persistToDisk();
-    this.logger.log("Database initialization complete");
+    this.logger.log('Database initialized with repository pattern');
   }
 
   private persistToDisk() {
     const data = this.sqlite.export();
     fs.writeFileSync(DB_FILE, Buffer.from(data));
-  }
-
-  private rowToConnection(
-    row: typeof connections.$inferSelect
-  ): ServerConnection {
-    return {
-      ...row,
-      password: row.password ?? undefined,
-      privateKey: row.privateKey ?? undefined,
-      passphrase: row.passphrase ?? undefined,
-      keychainKeyId: row.keychainKeyId ?? undefined,
-      color: row.color ?? undefined,
-      tags: row.tags ?? undefined,
-      systemInfo: row.systemInfo ? JSON.parse(row.systemInfo) : undefined,
-    };
-  }
-
-  private rowToSSHKey(row: typeof sshKeys.$inferSelect): SSHKey {
-    return {
-      ...row,
-      keyPath: row.keyPath ?? undefined,
-      keyContent: row.keyContent ?? undefined,
-      passphrase: row.passphrase ?? undefined,
-    };
-  }
-
-  getConnections(): ServerConnection[] {
-    const rows = this.db.select().from(connections).all();
-    return rows.map((r: typeof connections.$inferSelect) =>
-      this.rowToConnection(r)
-    );
-  }
-
-  getConnection(id: string): ServerConnection | undefined {
-    const row = this.db
-      .select()
-      .from(connections)
-      .where(eq(connections.id, id))
-      .get();
-    return row ? this.rowToConnection(row) : undefined;
-  }
-
-  addConnection(connection: ServerConnection): ServerConnection {
-    this.db.insert(connections).values({
-      id: connection.id,
-      name: connection.name,
-      host: connection.host,
-      port: connection.port,
-      username: connection.username,
-      authMethod: connection.authMethod,
-      password: connection.password ?? null,
-      privateKey: connection.privateKey ?? null,
-      passphrase: connection.passphrase ?? null,
-      keychainKeyId: connection.keychainKeyId ?? null,
-      color: connection.color ?? null,
-      tags: connection.tags ?? null,
-      createdAt: connection.createdAt,
-      updatedAt: connection.updatedAt,
-    }).run();
-    this.persistToDisk();
-    return connection;
-  }
-
-  updateConnection(
-    id: string,
-    updates: Partial<ServerConnection>
-  ): ServerConnection | null {
-    const existing = this.getConnection(id);
-    if (!existing) return null;
-
-    const merged = {
-      ...existing,
-      ...updates,
-      updatedAt: new Date().toISOString(),
-    };
-
-    this.db
-      .update(connections)
-      .set({
-        name: merged.name,
-        host: merged.host,
-        port: merged.port,
-        username: merged.username,
-        authMethod: merged.authMethod,
-        password: merged.password ?? null,
-        privateKey: merged.privateKey ?? null,
-        passphrase: merged.passphrase ?? null,
-        keychainKeyId: merged.keychainKeyId ?? null,
-        color: merged.color ?? null,
-        tags: merged.tags ?? null,
-        updatedAt: merged.updatedAt,
-      })
-      .where(eq(connections.id, id))
-      .run();
-
-    this.persistToDisk();
-    return merged;
-  }
-
-  deleteConnection(id: string): boolean {
-    const existing = this.getConnection(id);
-    if (!existing) return false;
-    this.db.delete(connections).where(eq(connections.id, id)).run();
-    this.persistToDisk();
-    return true;
-  }
-
-  // --- System Info ---
-
-  updateSystemInfo(id: string, info: ServerSystemInfo): void {
-    this.db
-      .update(connections)
-      .set({ systemInfo: JSON.stringify(info) })
-      .where(eq(connections.id, id))
-      .run();
-    this.persistToDisk();
-  }
-
-  // --- SSH Keys (Keychain) ---
-
-  getSSHKeys(): SSHKey[] {
-    const rows = this.db.select().from(sshKeys).all();
-    return rows.map((r: typeof sshKeys.$inferSelect) => this.rowToSSHKey(r));
-  }
-
-  getSSHKey(id: string): SSHKey | undefined {
-    const row = this.db
-      .select()
-      .from(sshKeys)
-      .where(eq(sshKeys.id, id))
-      .get();
-    return row ? this.rowToSSHKey(row) : undefined;
-  }
-
-  addSSHKey(key: SSHKey): SSHKey {
-    this.db.insert(sshKeys).values({
-      id: key.id,
-      name: key.name,
-      type: key.type,
-      keyPath: key.keyPath ?? null,
-      keyContent: key.keyContent ?? null,
-      passphrase: key.passphrase ?? null,
-      createdAt: key.createdAt,
-      updatedAt: key.updatedAt,
-    }).run();
-    this.persistToDisk();
-    return key;
-  }
-
-  updateSSHKey(id: string, updates: Partial<SSHKey>): SSHKey | null {
-    const existing = this.getSSHKey(id);
-    if (!existing) return null;
-
-    const merged = {
-      ...existing,
-      ...updates,
-      updatedAt: new Date().toISOString(),
-    };
-
-    this.db
-      .update(sshKeys)
-      .set({
-        name: merged.name,
-        type: merged.type,
-        keyPath: merged.keyPath ?? null,
-        keyContent: merged.keyContent ?? null,
-        passphrase: merged.passphrase ?? null,
-        updatedAt: merged.updatedAt,
-      })
-      .where(eq(sshKeys.id, id))
-      .run();
-
-    this.persistToDisk();
-    return merged;
-  }
-
-  deleteSSHKey(id: string): boolean {
-    const existing = this.getSSHKey(id);
-    if (!existing) return false;
-    this.db.delete(sshKeys).where(eq(sshKeys.id, id)).run();
-    this.persistToDisk();
-    return true;
-  }
-
-  // --- Storage Credentials ---
-
-  private rowToStorageCredential(
-    row: typeof storageCredentials.$inferSelect
-  ): StorageCredential {
-    if (row.type === "gcs") {
-      return {
-        id: row.id,
-        name: row.name,
-        type: "gcs",
-        provider: "gcs",
-        serviceAccountJson: row.serviceAccountJson ?? undefined,
-        defaultBucket: row.defaultBucket ?? undefined,
-        createdAt: row.createdAt,
-        updatedAt: row.updatedAt,
-      };
-    }
-    return {
-      id: row.id,
-      name: row.name,
-      type: "s3",
-      provider: row.provider as "s3" | "r2" | "minio" | "other",
-      endpointUrl: row.endpointUrl ?? "",
-      region: row.region ?? "",
-      accessKeyId: row.accessKeyId ?? "",
-      secretAccessKey: row.secretAccessKey ?? undefined,
-      defaultBucket: row.defaultBucket ?? undefined,
-      createdAt: row.createdAt,
-      updatedAt: row.updatedAt,
-    };
-  }
-
-  getStorageCredentials(): StorageCredential[] {
-    const rows = this.db.select().from(storageCredentials).all();
-    return rows.map((r: typeof storageCredentials.$inferSelect) =>
-      this.rowToStorageCredential(r)
-    );
-  }
-
-  getStorageCredential(id: string): StorageCredential | undefined {
-    const row = this.db
-      .select()
-      .from(storageCredentials)
-      .where(eq(storageCredentials.id, id))
-      .get();
-    return row ? this.rowToStorageCredential(row) : undefined;
-  }
-
-  addStorageCredential(cred: StorageCredential): StorageCredential {
-    this.db.insert(storageCredentials).values({
-      id: cred.id,
-      name: cred.name,
-      type: cred.type,
-      provider: cred.provider,
-      endpointUrl: cred.type === "s3" ? cred.endpointUrl : null,
-      region: cred.type === "s3" ? cred.region : null,
-      accessKeyId: cred.type === "s3" ? cred.accessKeyId : null,
-      secretAccessKey: cred.type === "s3" ? cred.secretAccessKey ?? null : null,
-      serviceAccountJson: cred.type === "gcs" ? cred.serviceAccountJson ?? null : null,
-      defaultBucket: cred.defaultBucket ?? null,
-      createdAt: cred.createdAt,
-      updatedAt: cred.updatedAt,
-    }).run();
-    this.persistToDisk();
-    return cred;
-  }
-
-  updateStorageCredential(
-    id: string,
-    updates: Partial<StorageCredential>
-  ): StorageCredential | null {
-    const existing = this.getStorageCredential(id);
-    if (!existing) return null;
-
-    const merged = {
-      ...existing,
-      ...updates,
-      updatedAt: new Date().toISOString(),
-    } as StorageCredential;
-
-    this.db
-      .update(storageCredentials)
-      .set({
-        name: merged.name,
-        type: merged.type,
-        provider: merged.provider,
-        endpointUrl: merged.type === "s3" ? merged.endpointUrl : null,
-        region: merged.type === "s3" ? merged.region : null,
-        accessKeyId: merged.type === "s3" ? merged.accessKeyId : null,
-        secretAccessKey: merged.type === "s3" ? merged.secretAccessKey ?? null : null,
-        serviceAccountJson: merged.type === "gcs" ? merged.serviceAccountJson ?? null : null,
-        defaultBucket: merged.defaultBucket ?? null,
-        updatedAt: merged.updatedAt,
-      })
-      .where(eq(storageCredentials.id, id))
-      .run();
-
-    this.persistToDisk();
-    return merged;
-  }
-
-  deleteStorageCredential(id: string): boolean {
-    const existing = this.getStorageCredential(id);
-    if (!existing) return false;
-    this.db.delete(storageCredentials).where(eq(storageCredentials.id, id)).run();
-    this.persistToDisk();
-    return true;
-  }
-
-  // --- Projects ---
-
-  private rowToProject(row: typeof projects.$inferSelect): Project {
-    return {
-      ...row,
-      description: row.description ?? undefined,
-      serverIds: row.serverIds ?? [],
-      storageCredentialIds: row.storageCredentialIds ?? [],
-      color: row.color ?? undefined,
-    };
-  }
-
-  getProjects(): Project[] {
-    const rows = this.db.select().from(projects).all();
-    return rows.map((r: typeof projects.$inferSelect) => this.rowToProject(r));
-  }
-
-  getProject(id: string): Project | undefined {
-    const row = this.db
-      .select()
-      .from(projects)
-      .where(eq(projects.id, id))
-      .get();
-    return row ? this.rowToProject(row) : undefined;
-  }
-
-  addProject(project: Project): Project {
-    this.db.insert(projects).values({
-      id: project.id,
-      name: project.name,
-      description: project.description ?? null,
-      serverIds: project.serverIds ?? null,
-      storageCredentialIds: project.storageCredentialIds ?? null,
-      color: project.color ?? null,
-      createdAt: project.createdAt,
-      updatedAt: project.updatedAt,
-    }).run();
-    this.persistToDisk();
-    return project;
-  }
-
-  updateProject(id: string, updates: Partial<Project>): Project | null {
-    const existing = this.getProject(id);
-    if (!existing) return null;
-
-    const merged = {
-      ...existing,
-      ...updates,
-      updatedAt: new Date().toISOString(),
-    };
-
-    this.db
-      .update(projects)
-      .set({
-        name: merged.name,
-        description: merged.description ?? null,
-        serverIds: merged.serverIds ?? null,
-        storageCredentialIds: merged.storageCredentialIds ?? null,
-        color: merged.color ?? null,
-        updatedAt: merged.updatedAt,
-      })
-      .where(eq(projects.id, id))
-      .run();
-
-    this.persistToDisk();
-    return merged;
-  }
-
-  deleteProject(id: string): boolean {
-    const existing = this.getProject(id);
-    if (!existing) return false;
-    this.db.delete(projects).where(eq(projects.id, id)).run();
-    this.persistToDisk();
-    return true;
   }
 }

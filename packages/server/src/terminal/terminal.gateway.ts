@@ -27,12 +27,12 @@ export class TerminalGateway implements OnGatewayConnection {
               stream.write(msg.data);
             } else if (!stream && msg.connectionId) {
               currentConnectionId = msg.connectionId;
-              const config = this.store.getConnection(msg.connectionId);
+              const config = this.store.servers.findById(msg.connectionId);
               if (!config) {
                 sendMessage(client, {
-                  type: "terminal:error",
+                  type: 'terminal:error',
                   connectionId: msg.connectionId,
-                  error: "Connection not found",
+                  error: 'Connection not found',
                 });
                 return;
               }

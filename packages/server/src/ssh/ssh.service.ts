@@ -16,11 +16,11 @@ export class SshService {
 
   private resolveKeychainKey(config: ServerConnection): ServerConnection {
     if (
-      config.authMethod === "key" &&
+      config.authMethod === 'key' &&
       config.keychainKeyId &&
       !config.privateKey
     ) {
-      const key = this.store.getSSHKey(config.keychainKeyId);
+      const key = this.store.keychain.findById(config.keychainKeyId);
       if (key) {
         const resolved = { ...config };
         if (key.type === "text" && key.keyContent) {

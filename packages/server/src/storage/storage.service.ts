@@ -10,8 +10,8 @@ export class StorageService {
   ) {}
 
   list(): StorageCredential[] {
-    return this.store.getStorageCredentials().map((c) => {
-      if (c.type === "gcs") {
+    return this.store.storage.findAll().map((c) => {
+      if (c.type === 'gcs') {
         return { ...c, serviceAccountJson: undefined };
       }
       return { ...c, secretAccessKey: undefined };
@@ -19,7 +19,7 @@ export class StorageService {
   }
 
   get(id: string): StorageCredential | undefined {
-    return this.store.getStorageCredential(id);
+    return this.store.storage.findById(id);
   }
 
   create(input: StorageCredentialInput): StorageCredential {
@@ -30,15 +30,18 @@ export class StorageService {
       createdAt: now,
       updatedAt: now,
     } as StorageCredential;
-    this.store.addStorageCredential(cred);
+    this.store.storage.insert(cred);
     return cred;
   }
 
-  update(id: string, updates: Partial<StorageCredential>): StorageCredential | null {
-    return this.store.updateStorageCredential(id, updates);
+  update(
+    id: string,
+    updates: Partial<StorageCredential>,
+  ): StorageCredential | null {
+    return this.store.storage.update(id, updates);
   }
 
   delete(id: string): boolean {
-    return this.store.deleteStorageCredential(id);
+    return this.store.storage.delete(id);
   }
 }

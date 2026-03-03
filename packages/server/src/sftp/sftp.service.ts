@@ -17,9 +17,9 @@ export class SftpService {
     const existing = this.activeSFTP.get(connectionId);
     if (existing) return existing;
 
-    const config = this.store.getConnection(connectionId);
+    const config = this.store.servers.findById(connectionId);
     if (!config) {
-      throw new Error("Connection not found");
+      throw new Error('Connection not found');
     }
 
     const client = await this.ssh.createSSHConnection(config);

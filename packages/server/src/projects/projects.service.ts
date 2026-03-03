@@ -10,11 +10,11 @@ export class ProjectsService {
   ) {}
 
   list(): Project[] {
-    return this.store.getProjects();
+    return this.store.projects.findAll();
   }
 
   get(id: string): Project | undefined {
-    return this.store.getProject(id);
+    return this.store.projects.findById(id);
   }
 
   create(input: ProjectInput): Project {
@@ -25,15 +25,48 @@ export class ProjectsService {
       createdAt: now,
       updatedAt: now,
     };
-    this.store.addProject(project);
+    this.store.projects.insert(project);
     return project;
   }
 
   update(id: string, updates: Partial<Project>): Project | null {
-    return this.store.updateProject(id, updates);
+    return this.store.projects.update(id, updates);
   }
 
   delete(id: string): boolean {
-    return this.store.deleteProject(id);
+    return this.store.projects.delete(id);
+  }
+
+  // New methods for managing associations
+
+  addServers(id: string, serverIds: string[]): Project | null {
+    this.store.projects.addServersToProject(id, serverIds);
+    return this.store.projects.findById(id) ?? null;
+  }
+
+  removeServers(id: string, serverIds: string[]): Project | null {
+    this.store.projects.removeServersFromProject(id, serverIds);
+    return this.store.projects.findById(id) ?? null;
+  }
+
+  addStorageCredentials(id: string, credentialIds: string[]): Project | null {
+    this.store.projects.addStorageCredentialsToProject(id, credentialIds);
+    return this.store.projects.findById(id) ?? null;
+  }
+
+  removeStorageCredentials(
+    id: string,
+    credentialIds: string[],
+  ): Project | null {
+    this.store.projects.removeStorageCredentialsFromProject(id, credentialIds);
+    return this.store.projects.findById(id) ?? null;
+  }
+
+  getByServerId(serverId: string): Project[] {
+    return this.store.projects.findByServerId(serverId);
+  }
+
+  getByStorageCredentialId(credentialId: string): Project[] {
+    return this.store.projects.findByStorageCredentialId(credentialId);
   }
 }

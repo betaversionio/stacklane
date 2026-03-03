@@ -11,10 +11,13 @@ export class StatsService {
     @Inject(SshService) private readonly ssh: SshService
   ) {}
 
-  async getSystemInfo(connectionId: string, refresh = false): Promise<ServerSystemInfo> {
-    const config = this.store.getConnection(connectionId);
+  async getSystemInfo(
+    connectionId: string,
+    refresh = false,
+  ): Promise<ServerSystemInfo> {
+    const config = this.store.servers.findById(connectionId);
     if (!config) {
-      throw new Error("Connection not found");
+      throw new Error('Connection not found');
     }
 
     if (!refresh && config.systemInfo) {
@@ -24,19 +27,19 @@ export class StatsService {
     const client = await this.ssh.createSSHConnection(config);
     const [osRelease, kernel, arch, platform] = await Promise.all([
       this.execCommand(client, "cat /etc/os-release 2>/dev/null || echo ''"),
-      this.execCommand(client, "uname -r"),
-      this.execCommand(client, "uname -m"),
-      this.execCommand(client, "uname -s"),
+      this.execCommand(client, 'uname -r'),
+      this.execCommand(client, 'uname -m'),
+      this.execCommand(client, 'uname -s'),
     ]);
 
-    let distro = "Unknown";
-    let distroId = "unknown";
-    for (const line of osRelease.split("\n")) {
-      if (line.startsWith("PRETTY_NAME=")) {
-        distro = line.split("=")[1]?.replace(/"/g, "") || distro;
+    let distro = 'Unknown';
+    let distroId = 'unknown';
+    for (const line of osRelease.split('\n')) {
+      if (line.startsWith('PRETTY_NAME=')) {
+        distro = line.split('=')[1]?.replace(/"/g, '') || distro;
       }
-      if (line.startsWith("ID=")) {
-        distroId = line.split("=")[1]?.replace(/"/g, "") || distroId;
+      if (line.startsWith('ID=')) {
+        distroId = line.split('=')[1]?.replace(/"/g, '') || distroId;
       }
     }
 
@@ -48,14 +51,14 @@ export class StatsService {
       platform,
     };
 
-    this.store.updateSystemInfo(connectionId, info);
+    this.store.servers.updateSystemInfo(connectionId, info);
     return info;
   }
 
   async getStats(connectionId: string): Promise<ServerStats> {
-    const config = this.store.getConnection(connectionId);
+    const config = this.store.servers.findById(connectionId);
     if (!config) {
-      throw new Error("Connection not found");
+      throw new Error('Connection not found');
     }
 
     const client = await this.ssh.createSSHConnection(config);

@@ -37,9 +37,9 @@ export class TunnelService {
       }
     }
 
-    const config = this.store.getConnection(connectionId);
+    const config = this.store.servers.findById(connectionId);
     if (!config) {
-      throw new Error("Connection not found");
+      throw new Error('Connection not found');
     }
 
     // Ensure the SSH connection is established

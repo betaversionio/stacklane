@@ -1,7 +1,7 @@
-import { Link, Outlet, useParams } from "react-router-dom";
-import { SidebarProvider } from "@/components/layout/sidebar/sidebar-context";
-import { ConnectionDialogProvider } from "@/features/servers";
-import { PageHeader } from "@/components/ui/page-header";
+import { Link, Outlet, useParams } from 'react-router-dom';
+import { SidebarProvider } from '@/components/layout/sidebar/sidebar-context';
+import { ConnectionDialogProvider } from '@/features/servers';
+import { PageHeader } from '@/components/ui/page-header';
 import {
   Breadcrumb,
   BreadcrumbList,
@@ -9,10 +9,10 @@ import {
   BreadcrumbLink,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
-import { useConnections } from "@/features/servers";
-import type { ServerConnection } from "@stacklane/shared";
-import { ServerSidebar } from "@/features/servers/components/server-sidebar";
+} from '@/components/ui/breadcrumb';
+import { useConnections } from '@/features/servers';
+import type { ServerConnection } from '@stacklane/shared';
+import { ServerSidebar } from '@/features/servers/components/server-sidebar';
 
 function ServerHeader() {
   const { id } = useParams<{ id: string }>();
@@ -27,7 +27,7 @@ function ServerHeader() {
         <BreadcrumbList>
           <BreadcrumbItem>
             <BreadcrumbLink asChild>
-              <Link to="/">Servers</Link>
+              <Link to="/servers">Servers</Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
           {connection && (

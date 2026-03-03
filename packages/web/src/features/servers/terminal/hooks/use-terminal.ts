@@ -1,10 +1,10 @@
-import { useEffect, useRef, useCallback } from "react";
-import { Terminal } from "@xterm/xterm";
-import { FitAddon } from "@xterm/addon-fit";
-import { WebLinksAddon } from "@xterm/addon-web-links";
-import type { ITheme } from "@xterm/xterm";
-import type { WsMessage } from "@stacklane/shared";
-import { terminalThemesMap } from "../lib/terminal-themes";
+import { useEffect, useRef, useCallback } from 'react';
+import { Terminal } from '@xterm/xterm';
+import { FitAddon } from '@xterm/addon-fit';
+import { WebLinksAddon } from '@xterm/addon-web-links';
+import type { ITheme } from '@xterm/xterm';
+import type { WsMessage } from '@stacklane/shared';
+import { terminalThemesMap } from '../lib/terminal-themes';
 
 interface TerminalSettings {
   fontFamily: string;
@@ -13,7 +13,10 @@ interface TerminalSettings {
 }
 
 function resolveTheme(name: string): ITheme {
-  return terminalThemesMap.get(name)?.theme ?? terminalThemesMap.get("default-dark")!.theme;
+  return (
+    terminalThemesMap.get(name)?.theme ??
+    terminalThemesMap.get('default-dark')!.theme
+  );
 }
 
 export function useTerminal(connectionId: string, settings: TerminalSettings) {
@@ -46,7 +49,7 @@ export function useTerminal(connectionId: string, settings: TerminalSettings) {
     fitAddonRef.current = fitAddon;
 
     // WebSocket connection
-    const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const wsUrl = `${protocol}//${window.location.host}/ws/terminal`;
     const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
@@ -54,7 +57,7 @@ export function useTerminal(connectionId: string, settings: TerminalSettings) {
     ws.onopen = () => {
       const dims = { cols: term.cols, rows: term.rows };
       const msg: WsMessage = {
-        type: "terminal:input",
+        type: 'terminal:input',
         connectionId,
         ...dims,
       };
@@ -64,30 +67,30 @@ export function useTerminal(connectionId: string, settings: TerminalSettings) {
     ws.onmessage = (event) => {
       const msg: WsMessage = JSON.parse(event.data);
       switch (msg.type) {
-        case "terminal:output":
+        case 'terminal:output':
           if (msg.data) term.write(msg.data);
           break;
-        case "terminal:connected":
+        case 'terminal:connected':
           term.focus();
           break;
-        case "terminal:error":
+        case 'terminal:error':
           term.writeln(`\r\n\x1b[31mError: ${msg.error}\x1b[0m`);
           break;
-        case "terminal:close":
-          term.writeln("\r\n\x1b[33mConnection closed.\x1b[0m");
+        case 'terminal:close':
+          term.writeln('\r\n\x1b[33mConnection closed.\x1b[0m');
           break;
       }
     };
 
     ws.onclose = () => {
-      term.writeln("\r\n\x1b[33mDisconnected.\x1b[0m");
+      term.writeln('\r\n\x1b[33mDisconnected.\x1b[0m');
     };
 
     // Terminal input -> WebSocket
     term.onData((data) => {
       if (ws.readyState === WebSocket.OPEN) {
         const msg: WsMessage = {
-          type: "terminal:input",
+          type: 'terminal:input',
           connectionId,
           data,
         };
@@ -99,7 +102,7 @@ export function useTerminal(connectionId: string, settings: TerminalSettings) {
     term.onResize(({ cols, rows }) => {
       if (ws.readyState === WebSocket.OPEN) {
         const msg: WsMessage = {
-          type: "terminal:resize",
+          type: 'terminal:resize',
           connectionId,
           cols,
           rows,
@@ -119,14 +122,14 @@ export function useTerminal(connectionId: string, settings: TerminalSettings) {
       });
     };
 
-    window.addEventListener("resize", debouncedFit);
+    window.addEventListener('resize', debouncedFit);
 
     const resizeObserver = new ResizeObserver(debouncedFit);
     resizeObserver.observe(containerRef.current);
 
     return () => {
       cancelAnimationFrame(rafId);
-      window.removeEventListener("resize", debouncedFit);
+      window.removeEventListener('resize', debouncedFit);
       resizeObserver.disconnect();
     };
   }, [connectionId]);
@@ -153,5 +156,5 @@ export function useTerminal(connectionId: string, settings: TerminalSettings) {
     fitAddon.fit();
   }, [settings.fontSize, settings.fontFamily, settings.themeName]);
 
-  return { containerRef, termRef };
+  return { containerRef, termRef, wsRef };
 }

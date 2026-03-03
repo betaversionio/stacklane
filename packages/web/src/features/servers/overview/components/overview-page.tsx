@@ -26,23 +26,25 @@ interface OverviewPageProps {
   connection: ServerConnection;
 }
 
-function StatusBadge({ connected }: { connected: boolean }) {
+function StatusBadge({ status }: { status: "connected" | "connecting" | "disconnected" }) {
   return (
     <span
       className={cn(
         "inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium",
-        connected
-          ? "bg-emerald-500/10 text-emerald-500"
-          : "bg-destructive/10 text-destructive"
+        status === "connected" && "bg-emerald-500/10 text-emerald-500",
+        status === "connecting" && "bg-amber-500/10 text-amber-500",
+        status === "disconnected" && "bg-destructive/10 text-destructive"
       )}
     >
       <span
         className={cn(
           "h-1.5 w-1.5 rounded-full",
-          connected ? "bg-emerald-500" : "bg-destructive"
+          status === "connected" && "bg-emerald-500",
+          status === "connecting" && "bg-amber-500 animate-pulse",
+          status === "disconnected" && "bg-destructive"
         )}
       />
-      {connected ? "Connected" : "Disconnected"}
+      {status === "connected" ? "Connected" : status === "connecting" ? "Connecting..." : "Disconnected"}
     </span>
   );
 }
@@ -184,7 +186,7 @@ export function OverviewPage({ connectionId, connection }: OverviewPageProps) {
               </p>
             </div>
           </div>
-          <StatusBadge connected={!!stats} />
+          <StatusBadge status={statsLoading ? "connecting" : stats ? "connected" : "disconnected"} />
         </div>
       </div>
 
