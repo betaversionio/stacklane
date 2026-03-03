@@ -1,6 +1,6 @@
 {
   "name": "stacklane",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Browser-based OS-like UI for managing remote servers via SSH",
   "author": {
     "name": "Satyam Lohiya",
