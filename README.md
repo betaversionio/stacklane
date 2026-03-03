@@ -2,8 +2,10 @@
 
 Browser-based OS-like UI for managing remote servers via SSH.
 
-![Version](https://img.shields.io/badge/version-0.1.0-blue)
+![Version](https://img.shields.io/badge/version-0.1.4-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
+
+![Dashboard](https://raw.githubusercontent.com/betaversionio/stacklane/main/images/19-dashboard.png)
 
 ## Quick Start
 
@@ -34,13 +36,49 @@ Options:
 
 ## Features
 
-- **Terminal** - Full interactive SSH terminal (xterm.js)
-- **File Manager** - Browse, upload, download, and edit files over SFTP
-- **Stats Monitor** - Real-time CPU, memory, disk, and network stats
-- **Connections** - Save and manage multiple SSH server connections
-- **Keychain** - Store SSH keys for passwordless authentication
-- **Tunnels** - Create SSH port forwarding tunnels
-- **Buckets** - Organize connections into groups
+### 🖥️ Terminal
+
+Full interactive SSH terminal with xterm.js, customizable themes, and one-click app installation.
+
+![Terminal](https://raw.githubusercontent.com/betaversionio/stacklane/main/images/16-terminal-fullscreen.png)
+
+**App Catalog** - Install popular self-hosted apps with one click:
+
+![App Catalog](https://raw.githubusercontent.com/betaversionio/stacklane/main/images/01-terminal-app-catalog.png)
+
+**Customization** - Multiple themes, fonts, and text sizes:
+
+![Terminal Appearance](https://raw.githubusercontent.com/betaversionio/stacklane/main/images/02-terminal-appearance.png)
+
+### 📁 File Manager
+
+Browse, upload, download, and edit files over SFTP with a modern file explorer interface.
+
+![File Manager](https://raw.githubusercontent.com/betaversionio/stacklane/main/images/09-file-manager.png)
+
+### 📊 Stats Monitor
+
+Real-time CPU, memory, disk, and network monitoring for your servers.
+
+![Monitor](https://raw.githubusercontent.com/betaversionio/stacklane/main/images/11-monitor-stats.png)
+
+### 🗄️ Storage Management
+
+Connect and manage S3-compatible storage buckets (AWS S3, Cloudflare R2, etc.).
+
+![Storage](https://raw.githubusercontent.com/betaversionio/stacklane/main/images/14-storage-buckets.png)
+
+### 🔐 Keychain
+
+Store SSH keys for passwordless authentication across all your servers.
+
+![Keychain](https://raw.githubusercontent.com/betaversionio/stacklane/main/images/13-keychain.png)
+
+### 🖼️ OS Integration
+
+Access your server's desktop environment directly from the browser.
+
+![OS Desktop](https://raw.githubusercontent.com/betaversionio/stacklane/main/images/07-os-desktop.png)
 
 ## Development
 
@@ -107,14 +145,14 @@ pnpm publish:npm    # Publish to npm
 
 ## Tech Stack
 
-| Layer    | Technology                                          |
-| -------- | --------------------------------------------------- |
-| Frontend | React 19, TypeScript, Tailwind CSS v4, Radix UI     |
-| Terminal | xterm.js                                            |
-| Backend  | NestJS, Express, ssh2, WebSocket (ws)               |
-| Database | SQLite (sql.js) + Drizzle ORM                       |
-| Build    | Turborepo, pnpm workspaces, Vite                    |
-| CLI      | Commander.js                                        |
+| Layer    | Technology                                      |
+| -------- | ----------------------------------------------- |
+| Frontend | React 19, TypeScript, Tailwind CSS v4, Radix UI |
+| Terminal | xterm.js                                        |
+| Backend  | NestJS, Express, ssh2, WebSocket (ws)           |
+| Database | SQLite (sql.js) + Drizzle ORM                   |
+| Build    | Turborepo, pnpm workspaces, Vite                |
+| CLI      | Commander.js                                    |
 
 ## License
 

@@ -1,5 +1,5 @@
 import { SQLJsDatabase } from 'drizzle-orm/sql-js';
-import * as schema from '../schema';
+import * as schema from '../schema.js';
 
 /**
  * Base repository class providing common database access

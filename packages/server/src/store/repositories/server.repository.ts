@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
 import type { ServerConnection, ServerSystemInfo } from '@stacklane/shared';
-import { connections } from '../schema';
-import { BaseRepository } from './base.repository';
+import { connections } from '../schema.js';
+import { BaseRepository } from './base.repository.js';
 
 /**
  * Repository for managing server connections

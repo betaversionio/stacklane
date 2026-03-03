@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
 import type { SSHKey } from '@stacklane/shared';
-import { sshKeys } from '../schema';
-import { BaseRepository } from './base.repository';
+import { sshKeys } from '../schema.js';
+import { BaseRepository } from './base.repository.js';
 
 /**
  * Repository for managing SSH keys

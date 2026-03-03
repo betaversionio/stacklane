@@ -1,7 +1,7 @@
 import { eq, sql } from 'drizzle-orm';
 import type { Project } from '@stacklane/shared';
-import { projects, projectServers, projectStorageCredentials } from '../schema';
-import { BaseRepository } from './base.repository';
+import { projects, projectServers, projectStorageCredentials } from '../schema.js';
+import { BaseRepository } from './base.repository.js';
 
 /**
  * Repository for managing projects and their associations

@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
 import type { StorageCredential } from '@stacklane/shared';
-import { storageCredentials } from '../schema';
-import { BaseRepository } from './base.repository';
+import { storageCredentials } from '../schema.js';
+import { BaseRepository } from './base.repository.js';
 
 /**
  * Repository for managing storage credentials

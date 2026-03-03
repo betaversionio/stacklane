@@ -5,10 +5,10 @@ import os from 'os';
 import initSqlJs from 'sql.js';
 import { drizzle, type SQLJsDatabase } from 'drizzle-orm/sql-js';
 import * as schema from './schema.js';
-import { ServerRepository } from './repositories/server.repository';
-import { KeychainRepository } from './repositories/keychain.repository';
-import { StorageRepository } from './repositories/storage.repository';
-import { ProjectRepository } from './repositories/project.repository';
+import { ServerRepository } from './repositories/server.repository.js';
+import { KeychainRepository } from './repositories/keychain.repository.js';
+import { StorageRepository } from './repositories/storage.repository.js';
+import { ProjectRepository } from './repositories/project.repository.js';
 
 const DATA_DIR = path.join(os.homedir(), '.stacklane');
 const DB_FILE = path.join(DATA_DIR, 'data.db');
