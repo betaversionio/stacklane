@@ -2,13 +2,16 @@ import { createContext, useContext, useCallback, useState, type ReactNode } from
 import { ConnectionDialog } from "./connection-dialog";
 import { ProviderDialog, type CloudProvider } from "./provider-dialog";
 import { SSHConfigImportDialog } from "./ssh-config-import-dialog";
-import type { ServerConnection } from "@stacklane/shared";
+import { CloudProviderConnectDialog } from "./cloud-provider-connect-dialog";
+import { CloudResourcesImportDialog } from "./cloud-resources-import-dialog";
+import type { ServerConnection, CloudProviderType } from "@stacklane/shared";
 
 interface ConnectionDialogContextValue {
   openAddDialog: () => void;
   openEditDialog: (connection: ServerConnection) => void;
   openProviderDialog: (provider: CloudProvider) => void;
   openSSHConfigImport: () => void;
+  openCloudProviderConnect: (provider: CloudProviderType) => void;
 }
 
 const ConnectionDialogContext = createContext<ConnectionDialogContextValue | null>(null);
@@ -19,6 +22,10 @@ export function ConnectionDialogProvider({ children }: { children: ReactNode }) 
   const [providerDialogOpen, setProviderDialogOpen] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState<CloudProvider | null>(null);
   const [sshConfigImportOpen, setSSHConfigImportOpen] = useState(false);
+  const [cloudProviderDialogOpen, setCloudProviderDialogOpen] = useState(false);
+  const [selectedCloudProvider, setSelectedCloudProvider] = useState<CloudProviderType | null>(null);
+  const [cloudResourcesDialogOpen, setCloudResourcesDialogOpen] = useState(false);
+  const [cloudCredentialId, setCloudCredentialId] = useState<string | null>(null);
 
   const openAddDialog = useCallback(() => {
     setEditConnection(undefined);
@@ -39,6 +46,11 @@ export function ConnectionDialogProvider({ children }: { children: ReactNode }) 
     setSSHConfigImportOpen(true);
   }, []);
 
+  const openCloudProviderConnect = useCallback((provider: CloudProviderType) => {
+    setSelectedCloudProvider(provider);
+    setCloudProviderDialogOpen(true);
+  }, []);
+
   const handleClose = useCallback(() => {
     setOpen(false);
     setEditConnection(undefined);
@@ -53,9 +65,24 @@ export function ConnectionDialogProvider({ children }: { children: ReactNode }) 
     setSSHConfigImportOpen(false);
   }, []);
 
+  const handleCloudProviderClose = useCallback(() => {
+    setCloudProviderDialogOpen(false);
+    setSelectedCloudProvider(null);
+  }, []);
+
+  const handleCloudProviderSuccess = useCallback((credentialId: string) => {
+    setCloudCredentialId(credentialId);
+    setCloudResourcesDialogOpen(true);
+  }, []);
+
+  const handleCloudResourcesClose = useCallback(() => {
+    setCloudResourcesDialogOpen(false);
+    setCloudCredentialId(null);
+  }, []);
+
   return (
     <ConnectionDialogContext.Provider
-      value={{ openAddDialog, openEditDialog, openProviderDialog, openSSHConfigImport }}
+      value={{ openAddDialog, openEditDialog, openProviderDialog, openSSHConfigImport, openCloudProviderConnect }}
     >
       {children}
       <ConnectionDialog open={open} onClose={handleClose} editConnection={editConnection} />
@@ -65,6 +92,17 @@ export function ConnectionDialogProvider({ children }: { children: ReactNode }) 
         provider={selectedProvider}
       />
       <SSHConfigImportDialog open={sshConfigImportOpen} onClose={handleSSHConfigClose} />
+      <CloudProviderConnectDialog
+        open={cloudProviderDialogOpen}
+        onClose={handleCloudProviderClose}
+        provider={selectedCloudProvider}
+        onSuccess={handleCloudProviderSuccess}
+      />
+      <CloudResourcesImportDialog
+        open={cloudResourcesDialogOpen}
+        onClose={handleCloudResourcesClose}
+        credentialId={cloudCredentialId}
+      />
     </ConnectionDialogContext.Provider>
   );
 }

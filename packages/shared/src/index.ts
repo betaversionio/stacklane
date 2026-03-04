@@ -8,3 +8,4 @@ export * from "./types/storage.js";
 export * from "./types/marketplace.js";
 export * from "./types/system-info.js";
 export * from "./types/project.js";
+export * from "./types/cloud-provider.js";

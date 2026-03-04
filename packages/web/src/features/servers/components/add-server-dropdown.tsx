@@ -48,7 +48,7 @@ const CLOUD_PROVIDERS = [
 ];
 
 export function AddServerDropdown() {
-  const { openAddDialog, openProviderDialog, openSSHConfigImport } = useConnectionDialog();
+  const { openAddDialog, openCloudProviderConnect, openSSHConfigImport } = useConnectionDialog();
 
   return (
     <DropdownMenu>
@@ -78,7 +78,7 @@ export function AddServerDropdown() {
             provider={item.provider}
             iconSlug={item.iconSlug}
             label={item.label}
-            onClick={openProviderDialog}
+            onClick={openCloudProviderConnect}
           />
         ))}
 

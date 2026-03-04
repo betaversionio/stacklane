@@ -18,8 +18,12 @@ export const connections = sqliteTable('connections', {
   passphrase: text('passphrase'),
   keychainKeyId: text('keychainKeyId'),
   color: text('color'),
-  tags: text('tags', { mode: 'json' }).$type<string[]>(),
+  tags: text('tags', { mode: 'json' }).$type<string[] | null>(),
   systemInfo: text('systemInfo'),
+  // Cloud provider integration
+  cloudProviderId: text('cloudProviderId'),
+  cloudInstanceId: text('cloudInstanceId'), // EC2 instance ID, Droplet ID, etc.
+  cloudMetadata: text('cloudMetadata', { mode: 'json' }).$type<Record<string, any> | null>(),
   createdAt: text('createdAt').notNull(),
   updatedAt: text('updatedAt').notNull(),
 });
@@ -55,6 +59,39 @@ export const sshKeys = sqliteTable('sshKeys', {
   keyPath: text('keyPath'),
   keyContent: text('keyContent'),
   passphrase: text('passphrase'),
+  createdAt: text('createdAt').notNull(),
+  updatedAt: text('updatedAt').notNull(),
+});
+
+export const cloudProviderCredentials = sqliteTable('cloudProviderCredentials', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  provider: text('provider', {
+    enum: ['aws', 'gcp', 'azure', 'digitalocean', 'linode', 'hetzner', 'vultr'],
+  }).notNull(),
+  // AWS fields
+  awsAccessKeyId: text('awsAccessKeyId'),
+  awsSecretAccessKey: text('awsSecretAccessKey'),
+  awsRegion: text('awsRegion'),
+  // GCP fields
+  gcpProjectId: text('gcpProjectId'),
+  gcpServiceAccountJson: text('gcpServiceAccountJson'),
+  // Azure fields
+  azureSubscriptionId: text('azureSubscriptionId'),
+  azureTenantId: text('azureTenantId'),
+  azureClientId: text('azureClientId'),
+  azureClientSecret: text('azureClientSecret'),
+  // DigitalOcean fields
+  digitaloceanToken: text('digitaloceanToken'),
+  // Linode fields
+  linodeToken: text('linodeToken'),
+  // Hetzner fields
+  hetznerToken: text('hetznerToken'),
+  // Vultr fields
+  vultrApiKey: text('vultrApiKey'),
+  // Metadata
+  isConnected: integer('isConnected', { mode: 'boolean' }).default(false),
+  lastSyncedAt: text('lastSyncedAt'),
   createdAt: text('createdAt').notNull(),
   updatedAt: text('updatedAt').notNull(),
 });
@@ -99,9 +136,20 @@ export const projectsRelations = relations(projects, ({ many }) => ({
   projectStorageCredentials: many(projectStorageCredentials),
 }));
 
-export const connectionsRelations = relations(connections, ({ many }) => ({
+export const connectionsRelations = relations(connections, ({ many, one }) => ({
   projectServers: many(projectServers),
+  cloudProvider: one(cloudProviderCredentials, {
+    fields: [connections.cloudProviderId],
+    references: [cloudProviderCredentials.id],
+  }),
 }));
+
+export const cloudProviderCredentialsRelations = relations(
+  cloudProviderCredentials,
+  ({ many }) => ({
+    connections: many(connections),
+  }),
+);
 
 export const storageCredentialsRelations = relations(
   storageCredentials,

@@ -10,8 +10,13 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
+    "@aws-sdk/client-ec2": "^3.1000.0",
     "@aws-sdk/client-s3": "^3.1000.0",
     "@aws-sdk/s3-request-presigner": "^3.1000.0",
+    "@azure/arm-compute": "^21.5.0",
+    "@azure/arm-storage": "^18.4.0",
+    "@azure/identity": "^4.6.0",
+    "@google-cloud/compute": "^6.8.0",
     "@google-cloud/storage": "^7.19.0",
     "@nestjs/common": "^11.1.14",
     "@nestjs/core": "^11.1.14",
@@ -20,6 +25,7 @@
     "@nestjs/websockets": "^11.1.14",
     "@stacklane/shared": "workspace:*",
     "archiver": "^7.0.1",
+    "axios": "^1.7.9",
     "drizzle-orm": "^0.45.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
