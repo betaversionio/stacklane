@@ -1,6 +1,6 @@
 {
   "name": "stacklane",
-  "version": "0.1.6",
+  "version": "0.2.0",
   "description": "Browser-based OS-like UI for managing remote servers via SSH",
   "author": {
     "name": "Satyam Lohiya",
@@ -46,6 +46,7 @@
     "@nestjs/platform-express": "^11.1.14",
     "@nestjs/platform-ws": "^11.1.14",
     "@nestjs/websockets": "^11.1.14",
+    "archiver": "^7.0.1",
     "commander": "^14.0.3",
     "drizzle-orm": "^0.45.1",
     "express": "^5.2.1",
