@@ -321,6 +321,82 @@ export class StorageClientService {
     );
   }
 
+  async deleteFolder(
+    credentialId: string,
+    bucket: string,
+    prefix: string
+  ): Promise<void> {
+    const allKeys = await this.listAllKeys(credentialId, bucket, prefix);
+    if (allKeys.length === 0) return;
+
+    // Delete in batches of 1000 (S3 limit)
+    const batchSize = 1000;
+    for (let i = 0; i < allKeys.length; i += batchSize) {
+      const batch = allKeys.slice(i, i + batchSize);
+      await this.deleteObjects(credentialId, bucket, batch);
+    }
+  }
+
+  async getObjectBuffer(
+    credentialId: string,
+    bucket: string,
+    key: string
+  ): Promise<Buffer> {
+    const cred = this.getCredential(credentialId);
+
+    if (cred.type === "s3") {
+      const client = this.getS3Client(cred);
+      const result = await client.send(
+        new GetObjectCommand({ Bucket: bucket, Key: key })
+      );
+      const stream = result.Body as import("stream").Readable;
+      const chunks: Buffer[] = [];
+      for await (const chunk of stream) {
+        chunks.push(Buffer.from(chunk));
+      }
+      return Buffer.concat(chunks);
+    }
+
+    const storage = this.getGCSStorage(cred);
+    const [contents] = await storage.bucket(bucket).file(key).download();
+    return contents;
+  }
+
+  async listAllKeys(
+    credentialId: string,
+    bucket: string,
+    prefix: string
+  ): Promise<string[]> {
+    const cred = this.getCredential(credentialId);
+    const allKeys: string[] = [];
+
+    if (cred.type === "s3") {
+      const client = this.getS3Client(cred);
+      let token: string | undefined;
+      do {
+        const result = await client.send(
+          new ListObjectsV2Command({
+            Bucket: bucket,
+            Prefix: prefix,
+            ContinuationToken: token,
+          })
+        );
+        for (const obj of result.Contents ?? []) {
+          if (obj.Key) allKeys.push(obj.Key);
+        }
+        token = result.NextContinuationToken;
+      } while (token);
+    } else {
+      const storage = this.getGCSStorage(cred);
+      const [files] = await storage.bucket(bucket).getFiles({ prefix });
+      for (const f of files) {
+        allKeys.push(f.name);
+      }
+    }
+
+    return allKeys;
+  }
+
   async uploadObject(
     credentialId: string,
     bucket: string,

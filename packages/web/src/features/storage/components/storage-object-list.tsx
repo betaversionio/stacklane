@@ -9,6 +9,8 @@ interface StorageObjectListProps {
   onPreview: (obj: BucketObject) => void;
   onDownload: (key: string) => void;
   onDelete: (key: string) => void;
+  onDeleteFolder?: (prefix: string) => void;
+  onDownloadFolder?: (prefix: string) => void;
 }
 
 export function StorageObjectList({
@@ -18,6 +20,8 @@ export function StorageObjectList({
   onPreview,
   onDownload,
   onDelete,
+  onDeleteFolder,
+  onDownloadFolder,
 }: StorageObjectListProps) {
   const folderItems: FolderItem[] = folders.map((f) => ({
     key: f,
@@ -48,6 +52,8 @@ export function StorageObjectList({
       }}
       onDownload={onDownload}
       onDelete={onDelete}
+      onDeleteFolder={onDeleteFolder}
+      onDownloadFolder={onDownloadFolder}
     />
   );
 }

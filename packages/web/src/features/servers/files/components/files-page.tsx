@@ -3,6 +3,17 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { toast } from "@/hooks/use-toast";
+import {
   ExplorerToolbar,
   ExplorerGrid,
   ExplorerList,
@@ -21,11 +32,18 @@ interface FilesPageProps {
   connectionId: string;
 }
 
+type DeleteTarget = {
+  path: string;
+  name: string;
+  isDir: boolean;
+};
+
 export function FilesPage({ connectionId }: FilesPageProps) {
   const [currentPath, setCurrentPath] = useState("/");
   const [viewMode, setViewMode] = useState<"grid" | "list">("list");
   const [showMkdir, setShowMkdir] = useState(false);
   const [newDirName, setNewDirName] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<DeleteTarget | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Navigation history
@@ -39,6 +57,8 @@ export function FilesPage({ connectionId }: FilesPageProps) {
     setNewDirName("");
   });
   const uploadMutation = useUploadFile(connectionId, currentPath);
+
+  const isDeleting = deleteMutation.isPending;
 
   const files = (data?.data as RemoteFile[] | undefined) ?? [];
 
@@ -98,11 +118,55 @@ export function FilesPage({ connectionId }: FilesPageProps) {
     window.open(sftpApi.download(connectionId, path), "_blank");
   };
 
-  const handleDelete = (path: string) => {
+  const handleDownloadFolder = (path: string) => {
+    window.open(sftpApi.downloadFolder(connectionId, path), "_blank");
+  };
+
+  const handleDeleteRequest = (path: string) => {
     const file = files.find((f) => f.path === path);
     if (file) {
-      deleteMutation.mutate({ path, isDir: file.type === "directory" });
+      setDeleteTarget({
+        path,
+        name: file.name,
+        isDir: file.type === "directory",
+      });
     }
+  };
+
+  const handleDeleteFolderRequest = (path: string) => {
+    const folder = files.find((f) => f.path === path);
+    if (folder) {
+      setDeleteTarget({
+        path,
+        name: folder.name,
+        isDir: true,
+      });
+    }
+  };
+
+  const handleConfirmDelete = () => {
+    if (!deleteTarget) return;
+
+    deleteMutation.mutate(
+      { path: deleteTarget.path, isDir: deleteTarget.isDir },
+      {
+        onSuccess: () => {
+          toast({
+            title: deleteTarget.isDir ? "Folder deleted" : "File deleted",
+            description: `"${deleteTarget.name}" has been deleted`,
+          });
+          setDeleteTarget(null);
+        },
+        onError: () => {
+          toast({
+            variant: "destructive",
+            title: "Delete failed",
+            description: `Could not delete "${deleteTarget.name}"`,
+          });
+          setDeleteTarget(null);
+        },
+      }
+    );
   };
 
   const handleOpen = (file: FileItem) => {
@@ -189,7 +253,9 @@ export function FilesPage({ connectionId }: FilesPageProps) {
               onNavigateFolder={navigateTo}
               onOpen={handleOpen}
               onDownload={handleDownload}
-              onDelete={handleDelete}
+              onDelete={handleDeleteRequest}
+              onDeleteFolder={handleDeleteFolderRequest}
+              onDownloadFolder={handleDownloadFolder}
             />
           ) : (
             <ExplorerList
@@ -200,11 +266,47 @@ export function FilesPage({ connectionId }: FilesPageProps) {
               onNavigateFolder={navigateTo}
               onOpen={handleOpen}
               onDownload={handleDownload}
-              onDelete={handleDelete}
+              onDelete={handleDeleteRequest}
+              onDeleteFolder={handleDeleteFolderRequest}
+              onDownloadFolder={handleDownloadFolder}
             />
           )}
         </div>
       )}
+
+      {/* Delete confirmation dialog */}
+      <AlertDialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => {
+          if (!open && !isDeleting) setDeleteTarget(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Delete {deleteTarget?.isDir ? "folder" : "file"} &quot;{deleteTarget?.name}&quot;?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteTarget?.isDir
+                ? "This will permanently delete this folder and all its contents. This action cannot be undone."
+                : "This will permanently delete this file. This action cannot be undone."}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault();
+                handleConfirmDelete();
+              }}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

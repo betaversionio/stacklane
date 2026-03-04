@@ -1,24 +1,19 @@
-import { Monitor, Add } from "iconsax-react";
-import { Button } from "@/components/ui/button";
+import { Monitor } from "iconsax-react";
 import { PageHeader } from "@/components/shared/page-header";
 import type { ServerConnection } from "@stacklane/shared";
-import { useConnections, useDeleteConnection, useConnectionDialog } from "@/features/servers";
+import { useConnections, useDeleteConnection, AddServerDropdown } from "@/features/servers";
 import { ServerCard } from "@/features/servers";
 
 export function ServersPage() {
   const { data, isLoading } = useConnections();
   const deleteMutation = useDeleteConnection();
-  const { openAddDialog } = useConnectionDialog();
 
   const connections = (data?.data as ServerConnection[] | undefined) ?? [];
 
   return (
     <div className="space-y-6">
       <PageHeader title="Servers" description="Manage your remote servers">
-        <Button onClick={openAddDialog}>
-          <Add size={18} color="currentColor" />
-          Add Server
-        </Button>
+        <AddServerDropdown />
       </PageHeader>
 
       {isLoading ? (
@@ -37,10 +32,7 @@ export function ServersPage() {
           <p className="text-muted-foreground mb-6 max-w-sm">
             Add your first server to start managing it through the browser.
           </p>
-          <Button onClick={openAddDialog}>
-            <Add size={18} color="currentColor" />
-            Add Server
-          </Button>
+          <AddServerDropdown />
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

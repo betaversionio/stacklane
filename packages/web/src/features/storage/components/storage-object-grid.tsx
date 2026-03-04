@@ -9,6 +9,8 @@ interface StorageObjectGridProps {
   onPreview: (obj: BucketObject) => void;
   onDownload: (key: string) => void;
   onDelete: (key: string) => void;
+  onDeleteFolder?: (prefix: string) => void;
+  onDownloadFolder?: (prefix: string) => void;
 }
 
 export function StorageObjectGrid({
@@ -18,6 +20,8 @@ export function StorageObjectGrid({
   onPreview,
   onDownload,
   onDelete,
+  onDeleteFolder,
+  onDownloadFolder,
 }: StorageObjectGridProps) {
   const folderItems: FolderItem[] = folders.map((f) => ({
     key: f,
@@ -48,6 +52,8 @@ export function StorageObjectGrid({
       }}
       onDownload={onDownload}
       onDelete={onDelete}
+      onDeleteFolder={onDeleteFolder}
+      onDownloadFolder={onDownloadFolder}
     />
   );
 }

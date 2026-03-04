@@ -82,4 +82,11 @@ export const storageApi = {
       `/storage/${credentialId}/explore/objects?bucket=${enc(bucket)}&key=${enc(key)}`,
       { method: "DELETE" }
     ),
+  deleteFolder: (credentialId: string, bucket: string, prefix: string) =>
+    request(
+      `/storage/${credentialId}/explore/folder?bucket=${enc(bucket)}&prefix=${enc(prefix)}`,
+      { method: "DELETE" }
+    ),
+  getFolderDownloadUrl: (credentialId: string, bucket: string, prefix: string) =>
+    `http://localhost:3721${BASE}/storage/${credentialId}/explore/folder/download?bucket=${enc(bucket)}&prefix=${enc(prefix)}`,
 };

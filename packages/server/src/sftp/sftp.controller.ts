@@ -13,6 +13,7 @@ import {
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 import type { Response } from "express";
+import archiver from "archiver";
 import type { ApiResponse, RemoteFile } from "@stacklane/shared";
 import { SftpService } from "./sftp.service.js";
 
@@ -64,6 +65,51 @@ export class SftpController {
     } catch (err: unknown) {
       const error = err instanceof Error ? err.message : "SFTP error";
       res.status(500).json({ success: false, error } satisfies ApiResponse);
+    }
+  }
+
+  @Get(":connectionId/download-folder")
+  async downloadFolder(
+    @Param("connectionId") connectionId: string,
+    @Query("path") dirPath: string,
+    @Res() res: Response
+  ): Promise<void> {
+    if (!dirPath) {
+      res.status(400).json({ success: false, error: "Path required" } satisfies ApiResponse);
+      return;
+    }
+
+    try {
+      const folderName = dirPath.split("/").filter(Boolean).pop() ?? "download";
+      const filePaths = await this.sftp.collectAllFiles(connectionId, dirPath);
+
+      if (filePaths.length === 0) {
+        res.status(404).json({ success: false, error: "Folder is empty" } satisfies ApiResponse);
+        return;
+      }
+
+      res.setHeader("Content-Type", "application/zip");
+      res.setHeader("Content-Disposition", `attachment; filename="${folderName}.zip"`);
+
+      const archive = archiver("zip", { zlib: { level: 5 } });
+      archive.pipe(res);
+
+      const sftpWrapper = await this.sftp.getSFTP(connectionId);
+
+      for (const filePath of filePaths) {
+        // Make path relative to the folder being downloaded
+        const relativePath = filePath.slice(dirPath.length).replace(/^\//, "");
+        if (!relativePath) continue;
+        const stream = sftpWrapper.createReadStream(filePath);
+        archive.append(stream, { name: relativePath });
+      }
+
+      await archive.finalize();
+    } catch (err: unknown) {
+      if (!res.headersSent) {
+        const error = err instanceof Error ? err.message : "SFTP error";
+        res.status(500).json({ success: false, error } satisfies ApiResponse);
+      }
     }
   }
 

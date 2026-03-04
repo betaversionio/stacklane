@@ -30,6 +30,8 @@ interface ExplorerListProps {
   onOpen: (file: FileItem) => void;
   onDownload: (key: string) => void;
   onDelete: (key: string) => void;
+  onDeleteFolder?: (key: string) => void;
+  onDownloadFolder?: (key: string) => void;
 }
 
 export function ExplorerList({
@@ -41,6 +43,8 @@ export function ExplorerList({
   onOpen,
   onDownload,
   onDelete,
+  onDeleteFolder,
+  onDownloadFolder,
 }: ExplorerListProps) {
   if (folders.length === 0 && files.length === 0) {
     return (
@@ -87,7 +91,35 @@ export function ExplorerList({
             {extraColumn && (
               <TableCell className="text-muted-foreground">--</TableCell>
             )}
-            <TableCell />
+            <TableCell>
+              <div className="flex items-center gap-0.5">
+                {onDownloadFolder && (
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDownloadFolder(folder.key);
+                    }}
+                  >
+                    <DocumentDownload size={14} color="currentColor" />
+                  </Button>
+                )}
+                {onDeleteFolder && (
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    className="text-destructive hover:text-destructive"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDeleteFolder(folder.key);
+                    }}
+                  >
+                    <Trash size={14} color="currentColor" />
+                  </Button>
+                )}
+              </div>
+            </TableCell>
           </TableRow>
         ))}
 

@@ -120,6 +120,42 @@ export class SftpService {
     });
   }
 
+  async collectAllFiles(
+    connectionId: string,
+    dirPath: string
+  ): Promise<string[]> {
+    const sftp = await this.getSFTP(connectionId);
+    const results: string[] = [];
+    await this.walkDir(sftp, dirPath, results);
+    return results;
+  }
+
+  private async walkDir(
+    sftp: SFTPWrapper,
+    dirPath: string,
+    results: string[]
+  ): Promise<void> {
+    const entries = await new Promise<{ filename: string; attrs: { mode?: number } }[]>(
+      (resolve, reject) => {
+        sftp.readdir(dirPath, (err, list) => {
+          if (err) reject(err);
+          else resolve(list);
+        });
+      }
+    );
+
+    for (const entry of entries) {
+      const fullPath = dirPath === "/" ? `/${entry.filename}` : `${dirPath}/${entry.filename}`;
+      const isSubDir = ((entry.attrs.mode ?? 0) & 0o40000) !== 0;
+
+      if (isSubDir) {
+        await this.walkDir(sftp, fullPath, results);
+      } else {
+        results.push(fullPath);
+      }
+    }
+  }
+
   async rename(connectionId: string, oldPath: string, newPath: string): Promise<void> {
     const sftp = await this.getSFTP(connectionId);
     return new Promise((resolve, reject) => {

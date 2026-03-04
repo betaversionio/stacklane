@@ -8,6 +8,8 @@ export const sftpApi = {
     ),
   download: (connectionId: string, path: string) =>
     `${BASE}/sftp/${connectionId}/download?path=${encodeURIComponent(path)}`,
+  downloadFolder: (connectionId: string, path: string) =>
+    `${BASE}/sftp/${connectionId}/download-folder?path=${encodeURIComponent(path)}`,
   upload: async (connectionId: string, dirPath: string, file: File) => {
     const formData = new FormData();
     formData.append("file", file);

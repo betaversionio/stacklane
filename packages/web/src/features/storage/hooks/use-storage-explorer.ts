@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { storageApi } from "../api";
 
 export function useStorageBucketList(credentialId: string) {
@@ -13,11 +13,14 @@ export function useStorageBucketObjects(
   credentialId: string,
   bucket: string,
   prefix?: string,
-  token?: string
 ) {
-  return useQuery({
-    queryKey: ["storage-explorer", credentialId, bucket, "objects", prefix ?? "", token ?? ""],
-    queryFn: () => storageApi.listObjects(credentialId, bucket, prefix, token),
+  return useInfiniteQuery({
+    queryKey: ["storage-explorer", credentialId, bucket, "objects", prefix ?? ""],
+    queryFn: ({ pageParam }) =>
+      storageApi.listObjects(credentialId, bucket, prefix, pageParam || undefined),
+    initialPageParam: "" as string,
+    getNextPageParam: (lastPage) =>
+      lastPage.data?.isTruncated ? (lastPage.data.nextContinuationToken ?? null) : null,
     enabled: !!credentialId && !!bucket,
   });
 }
@@ -39,6 +42,26 @@ export function useDeleteObject(
   return useMutation({
     mutationFn: (key: string) =>
       storageApi.deleteObject(credentialId, bucket, key),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["storage-explorer", credentialId, bucket, "objects", prefix ?? ""],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ["storage-explorer", credentialId, bucket, "stats"],
+      });
+    },
+  });
+}
+
+export function useDeleteFolder(
+  credentialId: string,
+  bucket: string,
+  prefix?: string
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (folderPrefix: string) =>
+      storageApi.deleteFolder(credentialId, bucket, folderPrefix),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: ["storage-explorer", credentialId, bucket, "objects", prefix ?? ""],
